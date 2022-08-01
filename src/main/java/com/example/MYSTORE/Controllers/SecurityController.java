@@ -1,5 +1,9 @@
 package com.example.MYSTORE.Controllers;
 
+import com.example.MYSTORE.SECURITY.JWT.JWTAuthorization;
+import com.example.MYSTORE.SECURITY.JWT.JWTRefreshRequest;
+import com.example.MYSTORE.SECURITY.JWT.JWTRequest;
+import com.example.MYSTORE.SECURITY.JWT.JWTResponse;
 import com.example.MYSTORE.SECURITY.Repository.UserRepository;
 import com.example.MYSTORE.SECURITY.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +22,8 @@ public class SecurityController {
     private UserService userService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private JWTAuthorization authService;
 
     @PostMapping("/api/auth/logout")
     public ResponseEntity Logout(@RequestBody String email, HttpServletRequest request,
@@ -61,5 +67,23 @@ public class SecurityController {
     @PostMapping("/api/auth/confirmreset")
     public ResponseEntity ConfirmReset(@RequestBody String res){
         return userService.ConfirmResetPassword(res);
+    }
+    @PostMapping("/api/auth/login")
+    public ResponseEntity<JWTResponse> login(@RequestBody JWTRequest authRequest, HttpServletResponse response) {
+        final JWTResponse token = authService.login(authRequest, response);
+        return ResponseEntity.ok(token);
+    }
+
+    @PostMapping("/api/auth/token")
+    public ResponseEntity<JWTResponse> getNewAccessToken(@RequestBody JWTRefreshRequest request,
+                                                         HttpServletRequest request1) {
+        final JWTResponse token = authService.getAccessToken(request1);
+        return ResponseEntity.ok(token);
+    }
+
+    @PostMapping("/api/auth/refresh")
+    public ResponseEntity<JWTResponse> getNewRefreshToken(@RequestBody JWTRefreshRequest request) {
+        final JWTResponse token = authService.refresh(request.getRefreshToken());
+        return ResponseEntity.ok(token);
     }
 }

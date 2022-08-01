@@ -7,9 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
@@ -23,7 +25,10 @@ public class FileService {
             MultipartFile multipartFile = (MultipartFile) file;
             String fileName = UUID.randomUUID().toString() + multipartFile.getContentType().replace("image/",".");
             String resultSaveFile = path + fileName;
-            multipartFile.transferTo(new File(resultSaveFile));
+            /*multipartFile.transferTo(new File("." +resultSaveFile))*/;
+            byte[] bytes = multipartFile.getBytes();
+            Path path1 = Paths.get(resultSaveFile);
+            Files.write(path1,bytes);
             System.out.println("save image");
             return fileName;
         }catch (ClassCastException e){
