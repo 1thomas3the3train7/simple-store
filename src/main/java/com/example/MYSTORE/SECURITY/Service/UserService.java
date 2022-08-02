@@ -12,6 +12,7 @@ import com.example.MYSTORE.SECURITY.Repository.*;
 import com.google.gson.Gson;
 import org.hibernate.StaleStateException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -24,6 +25,8 @@ import java.util.UUID;
 
 @Service
 public class UserService {
+    @Value("${frontend.url}")
+    private String myurl;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -100,7 +103,7 @@ public class UserService {
             final String recipientAddress = user.getEmail();
             final String subject = "Registration Confirmation";
             final String confirmationUrl
-                    = "http://localhost:3000" + "/registration?token=" + token + "&" +"email=" + recipientAddress;
+                    = myurl + "/registration?token=" + token + "&" +"email=" + recipientAddress;
             SimpleMailMessage email = new SimpleMailMessage();
             email.setTo(recipientAddress);
             email.setSubject(subject);
@@ -140,7 +143,7 @@ public class UserService {
         final String recipientAddress = user.getEmail();
         final String subject = "Reset Password";
         final String confirmationUrl
-                = "http://localhost:3000" + "/resetpassword?token=" + token + "&" +"email=" + recipientAddress;
+                = myurl + "/resetpassword?token=" + token + "&" +"email=" + recipientAddress;
         SimpleMailMessage Email = new SimpleMailMessage();
         Email.setTo(recipientAddress);
         Email.setSubject(subject);
