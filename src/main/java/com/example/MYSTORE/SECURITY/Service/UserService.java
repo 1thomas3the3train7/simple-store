@@ -5,6 +5,7 @@ import com.example.MYSTORE.PRODUCTS.DTO.ResetPasswordDTO;
 import com.example.MYSTORE.PRODUCTS.POJO.RESULT;
 import com.example.MYSTORE.SECURITY.JWT.JWTRefreshToken;
 import com.example.MYSTORE.SECURITY.Model.ResetPasswordToken;
+import com.example.MYSTORE.SECURITY.Model.Role;
 import com.example.MYSTORE.SECURITY.Model.User;
 import com.example.MYSTORE.SECURITY.Model.VerificationToken;
 import com.example.MYSTORE.SECURITY.Repository.*;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -66,7 +68,6 @@ public class UserService {
         user.setVerificationToken(verificationToken);
         verificationTokenRepository.save(verificationToken);
     }
-    //TODO transactional dont work
     public void SaveResetPasswordToken(ResetPasswordToken resetPasswordToken,User user){
         final ResetPasswordToken resetPasswordToken1 = resetPasswordTokenRepository.findByUser(user);
         if(resetPasswordToken1 != null){resetPasswordTokenRepository.delete(resetPasswordToken1);}
@@ -89,6 +90,7 @@ public class UserService {
             RegisterDTO registerDTO = gson.fromJson(jsonUser,RegisterDTO.class);
             User user = new User(registerDTO.getEmail(), registerDTO.getPassword());
             user.setUsername(registerDTO.getUsername());
+            if(registerDTO.getRole() == "admin"){user.setRoles(List.of(new Role("ROLE_ADMIN")));}
             final String token = UUID.randomUUID().toString();
             final VerificationToken verificationToken = new VerificationToken();
             verificationToken.setToken(token);

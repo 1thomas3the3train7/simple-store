@@ -19,13 +19,6 @@ public class JWTUtils {
         jwtInfoToken.setUsername(claims.get("username", String.class));
         return jwtInfoToken;
     }
-    public static JWTAuthentication mazafakaGenerate(){
-        final JWTAuthentication jwtAuthentication = new JWTAuthentication();
-        jwtAuthentication.setRoles(List.of(new Role("ROLE_ADMIN")));
-        jwtAuthentication.setEmail("adminemail");
-        jwtAuthentication.setUsername("adminusername");
-        return jwtAuthentication;
-    }
     private static Collection<Role> getRoles(Claims claims) {
         final List<String> roles = claims.get("roles",List.class);
         return roles.stream().map(Role::new).collect(Collectors.toList());

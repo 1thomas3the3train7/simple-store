@@ -17,11 +17,7 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User,Long> {
     User findByEmail(String email);
-    List<User> findByRoles(Role role);
-    User findByReviews(Reviews reviews);
     User findByJwtRefreshToken(JWTRefreshToken jwtRefreshToken);
     User getByEmail(String email);
-    @Query("select u.id from User u where u.email =?1")
-    Long CustomGetIdByEmail(String email);
     List<User> findByTeasIn(Collection<Tea> teas);
 }

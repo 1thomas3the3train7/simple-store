@@ -3,6 +3,7 @@ package com.example.MYSTORE.SECURITY;
 import com.example.MYSTORE.SECURITY.JWT.JWTFilter;
 import com.example.MYSTORE.SECURITY.Service.MyUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -25,6 +26,8 @@ import java.util.List;
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
+    @Value("${frontend.url}")
+    private String myurl;
     @Autowired
     private MyUserDetailsService myUserDetailsService;
     @Autowired
@@ -39,7 +42,7 @@ public class SecurityConfig {
                 .and()
                 .cors().configurationSource(request -> {
                     CorsConfiguration configuration =new CorsConfiguration();
-                    configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+                    configuration.setAllowedOrigins(Arrays.asList(myurl));
                     configuration.setAllowedMethods(Arrays.asList("GET","POST"));
                     configuration.setAllowedHeaders(List.of("*"));
                     configuration.setAllowCredentials(true);

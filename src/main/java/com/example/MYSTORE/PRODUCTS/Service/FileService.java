@@ -25,7 +25,6 @@ public class FileService {
             MultipartFile multipartFile = (MultipartFile) file;
             String fileName = UUID.randomUUID().toString() + multipartFile.getContentType().replace("image/",".");
             String resultSaveFile = path + fileName;
-            /*multipartFile.transferTo(new File("." +resultSaveFile))*/;
             byte[] bytes = multipartFile.getBytes();
             Path path1 = Paths.get(resultSaveFile);
             Files.write(path1,bytes);
@@ -34,6 +33,8 @@ public class FileService {
         }catch (ClassCastException e){
             System.out.println("not save image");
             System.out.println(e);
+            return null;
+        } catch (NullPointerException n){
             return null;
         }
     }

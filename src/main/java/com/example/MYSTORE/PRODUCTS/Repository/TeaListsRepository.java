@@ -13,5 +13,4 @@ import java.util.List;
 public interface TeaListsRepository extends JpaRepository<TeaLists,Long> {
     @EntityGraph(type = EntityGraph.EntityGraphType.LOAD,attributePaths = {"teas1"})
     TeaLists findByName(String name);
-    TeaLists findByTeas1(Tea tea);
 }

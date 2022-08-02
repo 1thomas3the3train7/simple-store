@@ -39,12 +39,6 @@ public class ProductController {
     private TeaListsRepository teaListsRepository;
     @Autowired
     private TeaRepository teaRepository;
-   /* @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private ReviewsRepository reviewsRepository;
-    @Autowired
-    private LazyTeaRepository lazyTeaRepository;*/
     @Autowired
     private CustomTeaRepository customTeaRepository;
 

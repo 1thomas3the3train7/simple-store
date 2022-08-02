@@ -96,10 +96,6 @@ public class MystoreApplication implements CommandLineRunner {
 		teaRepository.save(tea1);
 		teaRepository.save(tea2);
 		teaRepository.save(tea3);
-		/*teaLists.addTea(tea);
-		teaLists1.addTea(tea1);
-		teaLists.addTea(tea2);
-		teaLists1.addTea(tea3);*/
 		SlaiderImages slaiderImages = new SlaiderImages();
 		slaiderImages.setName("leftslaider");
 		slaiderRepository.save(slaiderImages);
@@ -115,7 +111,6 @@ public class MystoreApplication implements CommandLineRunner {
 		Tea tea5 = lazyTeaRepository.findById(Long.parseLong("1"));
 		Set<Reviews> reviews2 = tea5.getReviews();
 		System.out.println(customTeaRepository.findMaxPrice());
-
 	}
 
 }

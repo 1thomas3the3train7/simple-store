@@ -16,7 +16,6 @@ import java.util.Set;
 
 @Repository
 public interface TeaRepository extends JpaRepository<Tea,Long> {
-    Tea findByPrice(String price);
     Tea findById(long id);
     Tea getById(Long id);
     List<Tea> findByAboutStartingWith(String about);
@@ -24,5 +23,4 @@ public interface TeaRepository extends JpaRepository<Tea,Long> {
             String name, Integer maxprice, Integer minprice, List<Category> categories,Pageable pageable);
     Page<Tea> findByNameContainingAndPriceLessThanEqualAndPriceGreaterThanEqualOrderByNameAsc(
             String name, Integer maxprice, Integer minprice,Pageable pageable);
-    Page<Tea> findAll(Pageable pageable);
 }

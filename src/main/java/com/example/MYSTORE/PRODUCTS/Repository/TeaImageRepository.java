@@ -9,5 +9,4 @@ import java.util.List;
 
 @Repository
 public interface TeaImageRepository extends JpaRepository<TeaImage,Long> {
-    List<TeaImage> findByTea(Tea tea);
 }
