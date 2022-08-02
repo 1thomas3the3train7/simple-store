@@ -80,14 +80,6 @@ public class MystoreApplication implements CommandLineRunner {
 		tea2.setName("vani4");
 		Tea tea3 = new Tea("wd","about2","asd",4000,"asd");
 		tea3.setName("maksa");
-		Reviews reviews = new Reviews("asdas","asdasd","asd",3);
-		Reviews reviews1 = new Reviews("asdas","asdasd","asd",2);
-		reviewsRepository.save(reviews);
-		reviewsRepository.save(reviews1);
-		reviews.setTea(tea);
-		reviews1.setTea(tea1);
-		tea.addReview(reviews);
-		tea.addReview(reviews1);
 		tea.setMainLinkImage("vladd.jpg");
 		tea1.setMainLinkImage("vladd.jpg");
 		tea2.setMainLinkImage("vladd.jpg");
