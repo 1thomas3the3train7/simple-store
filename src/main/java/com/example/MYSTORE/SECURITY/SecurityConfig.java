@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         authz -> authz
                                 .antMatchers("/api/product/save","/api/product/upload",
-                                        "/api/product/uploadcategory").hasRole("ADMIN")
+                                        "/api/product/uploadcategory","/api/product/leftSlaider").hasRole("ADMIN")
                                 .antMatchers("/api/product/savereview","/api/product/addLike",
                                         "/api/product/getLikes").authenticated()
                                 .anyRequest().permitAll()
