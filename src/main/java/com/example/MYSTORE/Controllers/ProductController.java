@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +47,7 @@ public class ProductController {
     public ResponseEntity productSave(@RequestParam(value = "tea",required = false) String tea,
                                       @RequestParam(value = "files") Object[] files,
                                       @RequestParam(value = "filemain") Object filemain,
-                                      @RequestParam(required = false,name = "result") String  category) throws IOException{
+                                      @RequestParam(required = false,name = "result") String  category) throws IOException, URISyntaxException {
         System.out.println(tea);
         return productService.saveProduct(tea,files,filemain,category);
     }
@@ -54,7 +55,7 @@ public class ProductController {
     public ResponseEntity productUpload(@RequestParam(value = "tea") String tea,
                                         @RequestParam(value = "files",required = false) MultipartFile[] files,
                                         @RequestParam(value = "filemain",required = false) Object filemain,
-                                        @RequestParam(value = "result",required = false) String category) throws IOException{
+                                        @RequestParam(value = "result",required = false) String category) throws IOException,URISyntaxException{
         return productService.uplaodProduct(tea,files,filemain,category);
     }
     @GetMapping(value = "/api/product/getImage",produces = MediaType.IMAGE_JPEG_VALUE)
@@ -153,12 +154,12 @@ public class ProductController {
     }
     @PostMapping(value = "/api/product/leftSlaider",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity uploadSlaiderleft(
-            @RequestParam("files") MultipartFile[] files) throws IOException{
+            @RequestParam("files") MultipartFile[] files) throws IOException,URISyntaxException{
         return productService.uploadSlaiderleft(files,false);
     }
     @PostMapping(value = "/api/product/leftSlaiderD",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity uploadSlaiderleftD(
-            @RequestParam("files") MultipartFile[] files) throws IOException{
+            @RequestParam("files") MultipartFile[] files) throws IOException,URISyntaxException{
         return productService.uploadSlaiderleft(files,true);
     }
     @PostMapping(value = "/api/product/getLeftSlaider")
@@ -167,12 +168,12 @@ public class ProductController {
     }
     @PostMapping(value = "/api/product/rightSlaider",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity uploadSlaiderRight(
-            @RequestParam("files") MultipartFile[] files) throws IOException{
+            @RequestParam("files") MultipartFile[] files) throws IOException,URISyntaxException{
         return productService.uploadSlaiderright(files,false);
     }
     @PostMapping(value = "/api/product/rightSlaiderD",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity uploadSlaiderRightD(
-            @RequestParam("files") MultipartFile[] files) throws IOException{
+            @RequestParam("files") MultipartFile[] files) throws IOException,URISyntaxException{
         return productService.uploadSlaiderright(files,true);
     }
     @PostMapping(value = "/api/product/getRightSlaider")

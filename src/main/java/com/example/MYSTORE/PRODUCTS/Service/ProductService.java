@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,7 +52,7 @@ public class ProductService {
 
     private final Gson gson = new Gson();
     @Transactional(rollbackFor = Exception.class)
-    public ResponseEntity saveProduct(String teaReq, Object[] files,Object mainFile,String category) throws IOException,ClassCastException{
+    public ResponseEntity saveProduct(String teaReq, Object[] files,Object mainFile,String category) throws IOException,ClassCastException, URISyntaxException {
         try{
             /*Gson gson = new Gson();*/
             TeaDTO teaDTO = gson.fromJson(teaReq,TeaDTO.class);
@@ -82,7 +83,7 @@ public class ProductService {
             return ResponseEntity.ok("Error");
         }
     }
-    public ResponseEntity uplaodProduct(String tea, Object[] files,Object filemain,String category) throws IOException{
+    public ResponseEntity uplaodProduct(String tea, Object[] files,Object filemain,String category) throws IOException,URISyntaxException{
         try{
             /*Gson gson = new Gson();*/
             TeaDTO teaDTO = gson.fromJson(tea,TeaDTO.class);
@@ -265,7 +266,7 @@ public class ProductService {
         }
         return ResponseEntity.ok("exc");
     }
-    public ResponseEntity uploadSlaiderleft(MultipartFile[] multipartFiles,boolean del) throws IOException{
+    public ResponseEntity uploadSlaiderleft(MultipartFile[] multipartFiles,boolean del) throws IOException,URISyntaxException{
         SlaiderImages slaiderImages = slaiderRepository.findByName("leftslaider");
         if(del){teaImageRepository.deleteAllInBatch(slaiderImages.getTeaImages());slaiderImages.getTeaImages().clear();}
         if(slaiderImages == null){return ResponseEntity.ok("slaider not found");}
@@ -292,7 +293,7 @@ public class ProductService {
             return ResponseEntity.badRequest().build();
         }
     }
-    public ResponseEntity uploadSlaiderright(MultipartFile[] multipartFiles,boolean del) throws IOException{
+    public ResponseEntity uploadSlaiderright(MultipartFile[] multipartFiles,boolean del) throws IOException,URISyntaxException{
         SlaiderImages slaiderImages = slaiderRepository.findByName("rightslaider");
         if(del){teaImageRepository.deleteAll(slaiderImages.getTeaImages());slaiderImages.getTeaImages().clear();}
         if(slaiderImages == null){return ResponseEntity.ok("slaider not found");}

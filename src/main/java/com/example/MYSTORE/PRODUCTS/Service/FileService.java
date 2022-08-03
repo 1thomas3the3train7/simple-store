@@ -7,7 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.*;
 import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,17 +20,32 @@ import java.util.UUID;
 public class FileService {
     @Value("${upload.path}")
     private String path;
-    public String saveFile(Object file)throws IOException {
+    public String saveFile(Object file)throws IOException, URISyntaxException {
         try {
+            System.out.println("1");
+            String jarPath = getClass()
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI()
+                    .getPath();
+            System.out.println(jarPath);
             if(file == null || file == "undefined"){return null;}
             MultipartFile multipartFile = (MultipartFile) file;
             String fileName = UUID.randomUUID().toString() + multipartFile.getContentType().replace("image/",".");
             String resultSaveFile = path + fileName;
             byte[] bytes = multipartFile.getBytes();
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(resultSaveFile));
+            BufferedOutputStream bos = new BufferedOutputStream(new BufferedOutputStream(new FileOutputStream(jarPath + resultSaveFile)));
             bos.write(bytes);
             bos.flush();
             bos.close();
+           /* BufferedInputStream bis = new BufferedInputStream(inputStream);
+            Toolkit tk = Toolkit.getDefaultToolkit();
+            URL url = getClass().getResource("/" + fileName);
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(url.getPath()));
+            bos.write(bytes);
+            bos.flush();
+            bos.close();*/
             /*File file1 = new File(resultSaveFile);
             file1.createNewFile();
             Path path1 = Paths.get(resultSaveFile);
