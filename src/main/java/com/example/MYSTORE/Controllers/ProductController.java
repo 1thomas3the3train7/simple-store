@@ -1,17 +1,11 @@
 package com.example.MYSTORE.Controllers;
 
 import com.example.MYSTORE.PRODUCTS.DTO.SearchDTO;
-import com.example.MYSTORE.PRODUCTS.DTO.SlaiderDTO;
-import com.example.MYSTORE.PRODUCTS.DTO.TeaDTO;
 import com.example.MYSTORE.PRODUCTS.DTO.TeaListDTO;
-import com.example.MYSTORE.PRODUCTS.Model.Tea;
-import com.example.MYSTORE.PRODUCTS.Model.TeaLists;
 import com.example.MYSTORE.PRODUCTS.POJO.RESULT;
 import com.example.MYSTORE.PRODUCTS.Repository.*;
 import com.example.MYSTORE.PRODUCTS.Service.FileService;
 import com.example.MYSTORE.PRODUCTS.Service.ProductService;
-import com.example.MYSTORE.SECURITY.Model.User;
-import com.example.MYSTORE.SECURITY.Repository.UserRepository;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -24,9 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-
 
 @RestController
 public class ProductController {

@@ -28,8 +28,8 @@ public class MultipartConfigelement {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
 
-        mailSender.setUsername("maksimka.bazhenov1993@gmail.com");
-        mailSender.setPassword("uqlommzxcxyfgiok");
+        mailSender.setUsername("your email");
+        mailSender.setPassword("your key");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");

@@ -51,13 +51,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(
                         authz -> authz
                                 .antMatchers("/api/product/save","/api/product/upload",
-                                        "/api/product/uploadcategory","/api/product/leftSlaider").hasRole("ADMIN")
+                                        "/api/product/uploadcategory","/api/product/leftSlaider",
+                                        "/api/product/rightSlaider").hasRole("ADMIN")
                                 .antMatchers("/api/product/savereview","/api/product/addLike",
                                         "/api/product/getLikes").authenticated()
                                 .anyRequest().permitAll()
                                 .and()
-                                .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                ).build();
+                                .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class)).build();
     }
     @Bean
     public PasswordEncoder passwordEncoder(){

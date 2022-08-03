@@ -2,17 +2,13 @@ package com.example.MYSTORE.PRODUCTS.Repository;
 
 import com.example.MYSTORE.PRODUCTS.Model.Category;
 import com.example.MYSTORE.PRODUCTS.Model.Tea;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+
 
 @Repository
 public interface TeaRepository extends JpaRepository<Tea,Long> {
