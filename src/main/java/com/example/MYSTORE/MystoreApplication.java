@@ -84,8 +84,8 @@ public class MystoreApplication implements CommandLineRunner {
 		categoryRepository.save(category);categoryRepository.save(category1);
 
 		Tea tea = new Tea();
-		tea.setName("Ягодный чай");tea.setSubname("Красный чай");tea.setAbout(ab);tea.setPrice(1000);tea.setOldPrice(1500);
-		teaRepository.save(tea);tea.setMainLinkImage("tea1.webp");
+		tea.setName("Ягодный чай");tea.setSubname("Красный чай");tea.setAbout(ab);tea.setPrice(1000);tea.setOldPrice(1500);tea.setMainLinkImage("tea1.webp");
+		teaRepository.save(tea);
 		TeaImage teaImage = new TeaImage("db7bcb6f8d2e1f5e056b8ed6848c6ee4.webp");
 		TeaImage teaImage1 = new TeaImage("lmpzmez89be5afr2u1agmpcmnzcz5m6g.webp");
 		teaImageRepository.save(teaImage);teaImageRepository.save(teaImage1);
