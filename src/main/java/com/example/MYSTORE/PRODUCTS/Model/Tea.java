@@ -57,7 +57,7 @@ public class Tea {
     @JsonIgnore
     @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinTable(name = "tea_and_list",joinColumns = @JoinColumn(name = "tea_id"),inverseJoinColumns = @JoinColumn(name = "list_id"))
-    private Collection<TeaLists> teaLists;
+    private Collection<TeaLists> teaLists = new ArrayList<>();
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "tea_and_review",joinColumns = @JoinColumn(name = "tea_id"),

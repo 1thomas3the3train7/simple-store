@@ -27,6 +27,7 @@ import java.util.Set;
 
 @SpringBootApplication
 public class MystoreApplication implements CommandLineRunner {
+	private String ab = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
 
 	public static void main(String[] args) {
 		SpringApplication.run(MystoreApplication.class, args);
@@ -82,6 +83,18 @@ public class MystoreApplication implements CommandLineRunner {
 		teaListsRepository.save(teaLists1);
 		categoryRepository.save(category);categoryRepository.save(category1);
 
+		Tea tea = new Tea();
+		tea.setName("Ягодный чай");tea.setSubname("Красный чай");tea.setAbout(ab);tea.setPrice(1000);tea.setOldPrice(1500);
+		teaRepository.save(tea);tea.setMainLinkImage("tea1.webp");
+		TeaImage teaImage = new TeaImage("db7bcb6f8d2e1f5e056b8ed6848c6ee4.webp");
+		TeaImage teaImage1 = new TeaImage("lmpzmez89be5afr2u1agmpcmnzcz5m6g.webp");
+		teaImageRepository.save(teaImage);teaImageRepository.save(teaImage1);
+		Tea tea1 = lazyTeaRepository.findById(Long.parseLong("1"));
+		tea1.addTeaImage(teaImage);
+		tea1.addTeaImage(teaImage1);
+		TeaLists teaLists2 = teaListsRepository.findByName("list1");
+		teaLists2.addTea(tea1);
+		teaRepository.saveAndFlush(tea1);
 	}
 
 }

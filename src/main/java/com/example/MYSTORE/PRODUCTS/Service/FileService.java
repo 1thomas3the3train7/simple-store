@@ -39,17 +39,6 @@ public class FileService {
             bos.write(bytes);
             bos.flush();
             bos.close();
-           /* BufferedInputStream bis = new BufferedInputStream(inputStream);
-            Toolkit tk = Toolkit.getDefaultToolkit();
-            URL url = getClass().getResource("/" + fileName);
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(url.getPath()));
-            bos.write(bytes);
-            bos.flush();
-            bos.close();*/
-            /*File file1 = new File(resultSaveFile);
-            file1.createNewFile();
-            Path path1 = Paths.get(resultSaveFile);
-            Files.write(path1,bytes);*/
             System.out.println("save image");
             return fileName;
         }catch (ClassCastException e){

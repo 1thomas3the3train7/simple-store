@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LazyTeaRepository extends JpaRepository<Tea,Long> {
-    @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, attributePaths = {"reviews","teaImages","categories"})
+    @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, attributePaths = {"reviews","teaImages","categories","teaLists"})
     Tea findById(long id);
 }
