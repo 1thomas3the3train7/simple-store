@@ -62,7 +62,7 @@ public class FileService {
     }
     public ByteArrayResource uploadImage(String fileName) throws IOException{
         ByteArrayResource byteArrayResource = new ByteArrayResource(
-                Files.readAllBytes(Paths.get(path + fileName))
+                Files.readAllBytes(Paths.get(fileName))
         );
         return byteArrayResource;
     }
