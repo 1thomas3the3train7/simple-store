@@ -93,7 +93,7 @@ public class UserService {
             RegisterDTO registerDTO = gson.fromJson(jsonUser,RegisterDTO.class);
             User user = new User(registerDTO.getEmail(), registerDTO.getPassword());
             user.setUsername(registerDTO.getUsername());
-            if(registerDTO.getRole().equals("admin")){user.setRoles(List.of(new Role("ROLE_ADMIN")));}
+            if(registerDTO.getRole() != null && registerDTO.getRole().equals("admin")){user.setRoles(List.of(new Role("ROLE_ADMIN")));}
             final String token = UUID.randomUUID().toString();
             final VerificationToken verificationToken = new VerificationToken();
             verificationToken.setToken(token);

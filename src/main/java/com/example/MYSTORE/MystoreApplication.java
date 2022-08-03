@@ -72,22 +72,6 @@ public class MystoreApplication implements CommandLineRunner {
 		TeaLists teaLists1 = new TeaLists("list2");
 		Category category = new Category("category");
 		Category category1 = new Category("category1");
-		Tea tea = new Tea("c","about","asd",1000,"Asd");
-		tea.setName("vlad");
-		Tea tea1 = new Tea("wd","about1","asd",2000,"asd");
-		tea1.setName("vitek");
-		Tea tea2 = new Tea("wd","about2","asd",3000,"asd");
-		tea2.setName("vani4");
-		Tea tea3 = new Tea("wd","about2","asd",4000,"asd");
-		tea3.setName("maksa");
-		tea.setMainLinkImage("vladd.jpg");
-		tea1.setMainLinkImage("vladd.jpg");
-		tea2.setMainLinkImage("vladd.jpg");
-		tea3.setMainLinkImage("vladd.jpg");
-		teaRepository.save(tea);
-		teaRepository.save(tea1);
-		teaRepository.save(tea2);
-		teaRepository.save(tea3);
 		SlaiderImages slaiderImages = new SlaiderImages();
 		slaiderImages.setName("leftslaider");
 		slaiderRepository.save(slaiderImages);
@@ -97,12 +81,7 @@ public class MystoreApplication implements CommandLineRunner {
 		teaListsRepository.save(teaLists);
 		teaListsRepository.save(teaLists1);
 		categoryRepository.save(category);categoryRepository.save(category1);
-		Tea tea4 = lazyTeaRepository.findById(Long.parseLong("2"));
-		tea4.addCategory(category);tea4.addCategory(category1);
-		teaRepository.save(tea4);
-		Tea tea5 = lazyTeaRepository.findById(Long.parseLong("1"));
-		Set<Reviews> reviews2 = tea5.getReviews();
-		System.out.println(customTeaRepository.findMaxPrice());
+
 	}
 
 }

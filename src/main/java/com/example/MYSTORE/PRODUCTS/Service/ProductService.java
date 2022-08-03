@@ -50,10 +50,10 @@ public class ProductService {
     private TeaListsRepository teaListsRepository;
 
     private final Gson gson = new Gson();
+    @Transactional(rollbackFor = Exception.class)
     public ResponseEntity saveProduct(String teaReq, Object[] files,Object mainFile,String category) throws IOException,ClassCastException{
         try{
             /*Gson gson = new Gson();*/
-            System.out.println(teaReq);
             TeaDTO teaDTO = gson.fromJson(teaReq,TeaDTO.class);
             Tea tea = new Tea();
             tea.setName(teaDTO.getName());tea.setPrice(teaDTO.getPrice());tea.setMainLinkImage(teaDTO.getMainLinkImage());
@@ -66,9 +66,11 @@ public class ProductService {
             }
             String[] categories = category.replace("[","").replace("]","").split(",");
             for(String c : categories){
-                RESULT result = gson.fromJson(c,RESULT.class);
-                Category category1 = categoryRepository.findByName(result.getResult());
-                if(category1 != null){category1.addTea(tea);categoryRepository.saveAndFlush(category1);}
+                if(!c.equals("undefined")){
+                    RESULT result = gson.fromJson(c,RESULT.class);
+                    Category category1 = categoryRepository.findByName(result.getResult());
+                    if(category1 != null){category1.addTea(tea);categoryRepository.saveAndFlush(category1);}
+                }
             }
             tea.setMainLinkImage(fileService.saveFile(mainFile));
             teaRepository.save(tea);
@@ -95,7 +97,6 @@ public class ProductService {
                 tea1.setTeaImages(teaImages);
                 teaRepository.saveAndFlush(tea1);
                 for(Object file : files){
-                    System.out.println("save teaimgae");
                     TeaImage teaImage =  new TeaImage(fileService.saveFile(file));
                     teaImage.setTea(tea1);
                     teaImageRepository.saveAndFlush(teaImage);
@@ -106,7 +107,6 @@ public class ProductService {
                 Set<Category> categories1 = new HashSet<>();
                 tea1.setCategories(categories1);
                 teaRepository.saveAndFlush(tea1);
-                System.out.println("ifcategory");
                 for(String c : categories){
                     RESULT result = gson.fromJson(c,RESULT.class);
                     Category category1 = categoryRepository.findByName(result.getResult());
@@ -114,7 +114,6 @@ public class ProductService {
                 }
             }
             if(filemain != null){
-                System.out.println("iffile");
                 tea1.setMainLinkImage(fileService.saveFile(filemain));
             }
             teaRepository.saveAndFlush(tea1);
@@ -181,20 +180,24 @@ public class ProductService {
         return ResponseEntity.ok(reviewsDTOS);
     }
     public ResponseEntity getTea(String id){
-        Tea tea = lazyTeaRepository.findById(Long.parseLong(id));
-        TeaDTO teaDTO = new TeaDTO();
-        teaDTO.setId(tea.getId());
-        teaDTO.setAbout(tea.getAbout());teaDTO.setFermentation(tea.getFermentation());
-        System.out.println(tea.getGrade());
-        teaDTO.setGrade(tea.getGrade());teaDTO.setMadeCountry(tea.getMadeCountry());
-        teaDTO.setName(tea.getName());teaDTO.setMainLinkImage(tea.getMainLinkImage());
-        teaDTO.setPrice(tea.getPrice());teaDTO.setTeaImages(tea.getTeaImages().stream().toList());
-        teaDTO.setOldPrice(tea.getOldPrice());teaDTO.setSubname(tea.getSubname());
-        teaDTO.setReviewsDTOList(tea.getReviews().stream().map
-                (m -> new ReviewsDTO(m.getPluses(),m.getMinuses(),m.getComment(),m.getGrade(),m.getUsername())).collect(Collectors.toList()));
-        teaDTO.setCategoryDTOList(tea.getCategories().stream().map(
-                m -> new CategoryDTO(m.getName())).collect(Collectors.toList()));
-        return ResponseEntity.ok(teaDTO);
+        try {
+            Tea tea = lazyTeaRepository.findById(Long.parseLong(id));
+            TeaDTO teaDTO = new TeaDTO();
+            teaDTO.setId(tea.getId());
+            teaDTO.setAbout(tea.getAbout());teaDTO.setFermentation(tea.getFermentation());
+            teaDTO.setGrade(tea.getGrade());teaDTO.setMadeCountry(tea.getMadeCountry());
+            teaDTO.setName(tea.getName());teaDTO.setMainLinkImage(tea.getMainLinkImage());
+            teaDTO.setPrice(tea.getPrice());teaDTO.setTeaImages(tea.getTeaImages().stream().toList());
+            teaDTO.setOldPrice(tea.getOldPrice());teaDTO.setSubname(tea.getSubname());
+            teaDTO.setReviewsDTOList(tea.getReviews().stream().map
+                    (m -> new ReviewsDTO(m.getPluses(),m.getMinuses(),m.getComment(),m.getGrade(),m.getUsername())).collect(Collectors.toList()));
+            teaDTO.setCategoryDTOList(tea.getCategories().stream().map(
+                    m -> new CategoryDTO(m.getName())).collect(Collectors.toList()));
+            return ResponseEntity.ok(teaDTO);
+        } catch (NullPointerException n){
+            return ResponseEntity.badRequest().body("tea not found");
+        }
+
     }
     public ResponseEntity searchTea(String search){
         /*Gson gson = new Gson();*/
