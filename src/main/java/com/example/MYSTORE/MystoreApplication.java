@@ -59,6 +59,21 @@ public class MystoreApplication implements CommandLineRunner {
 	private LazyTeaRepository lazyTeaRepository;
 	@Autowired
 	private SlaiderRepository slaiderRepository;
+	private int count = 1;
+	public void saveTea(String name,String subname,String about,Integer price,Integer oldPrice,String mainlink,String mainlink2,String mainlink3,String list){
+		Tea tea = new Tea();
+		tea.setName(name);tea.setSubname(subname);tea.setAbout(ab);tea.setPrice(price);tea.setOldPrice(oldPrice);tea.setMainLinkImage(mainlink);
+		teaRepository.save(tea);
+		TeaImage teaImage = new TeaImage(mainlink2);
+		TeaImage teaImage1 = new TeaImage(mainlink2);
+		teaImageRepository.save(teaImage);teaImageRepository.save(teaImage1);
+		Tea tea1 = lazyTeaRepository.findByName(name);
+		tea1.addTeaImage(teaImage);
+		tea1.addTeaImage(teaImage1);
+		TeaLists teaLists2 = teaListsRepository.findByName(list);
+		teaLists2.addTea(tea1);
+		teaRepository.saveAndFlush(tea1);
+	}
 	@Override
 	public void run(String... args) throws Exception {
 		User user = new User("email","password");user.setUsername("1thomas3the3train7");
@@ -95,6 +110,14 @@ public class MystoreApplication implements CommandLineRunner {
 		TeaLists teaLists2 = teaListsRepository.findByName("list1");
 		teaLists2.addTea(tea1);
 		teaRepository.saveAndFlush(tea1);
+
+		saveTea("Черный чай","Черный чай",ab,2000,3000,"stkm5pyy72h77xtxgnz8i0hkmfqyyzqj.webp",
+				"y780akcg5719hrcq2k1v6tc9cx7ms9bu.webp","1b80702e3fe9b5637ae81f71693610c3.webp","list1");
+
+		saveTea("Зеленый чай","Зеленый чай",ab,4000,5000,"ec9d32f8618994c0e32e1d5f28b813b9.webp",
+				"27161556e8cd9baee7195a407716a245.webp","978634967cea4aeda4a992ac2671dbef.webp","list2");
+		saveTea("Мятный чай","Зеленый чай",ab,6000,7000,"wi0cqvtf3z5101bshbptuw0ds78xy98q.webp",
+				"t41dww17jgbtc1lqh9fj9mnsqr0wp324.webp","gnxd8qo4fik9iw61seiz5eor9fw8nfe9.webp","list2");
 	}
 
 }
