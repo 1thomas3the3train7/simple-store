@@ -35,7 +35,7 @@ public class FileService {
             String fileName = UUID.randomUUID().toString() + multipartFile.getContentType().replace("image/",".");
             String resultSaveFile = path + fileName;
             byte[] bytes = multipartFile.getBytes();
-            BufferedOutputStream bos = new BufferedOutputStream(new BufferedOutputStream(new FileOutputStream(jarPath + resultSaveFile)));
+            BufferedOutputStream bos = new BufferedOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
             bos.write(bytes);
             bos.flush();
             bos.close();
