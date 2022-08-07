@@ -14,11 +14,11 @@ public class TeaImage {
     private Long id;
     private String linkImage;
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinTable(name = "tea_and_image",joinColumns = @JoinColumn(name = "image_id"),inverseJoinColumns = @JoinColumn(name = "tea_id"))
     private Tea tea;
     @JsonIgnore
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "slaider_and_image",joinColumns = @JoinColumn(name = "image_id"),inverseJoinColumns = @JoinColumn(name = "slaider_id"))
     private Collection<SlaiderImages> slaiderImages;
 

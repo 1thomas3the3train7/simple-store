@@ -32,12 +32,12 @@ public class ProductController {
     @Autowired
     private TeaRepository teaRepository;
     @Autowired
-    private CustomTeaRepository customTeaRepository;
+    private CustomTeaRepository1 customTeaRepository1;
 
     @PostMapping(value = "/api/product/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity productSave(@RequestParam(value = "tea",required = false) String tea,
-                                      @RequestParam(value = "files") Object[] files,
-                                      @RequestParam(value = "filemain") Object filemain,
+                                      @RequestParam(value = "files") MultipartFile[] files,
+                                      @RequestParam(value = "filemain") MultipartFile filemain,
                                       @RequestParam(required = false,name = "result") String  category) throws IOException, URISyntaxException {
         System.out.println(tea);
         return productService.saveProduct(tea,files,filemain,category);
@@ -45,7 +45,7 @@ public class ProductController {
     @PostMapping(value = "/api/product/upload",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity productUpload(@RequestParam(value = "tea") String tea,
                                         @RequestParam(value = "files",required = false) MultipartFile[] files,
-                                        @RequestParam(value = "filemain",required = false) Object filemain,
+                                        @RequestParam(value = "filemain",required = false) MultipartFile filemain,
                                         @RequestParam(value = "result",required = false) String category) throws IOException,URISyntaxException{
         return productService.uplaodProduct(tea,files,filemain,category);
     }
@@ -53,10 +53,10 @@ public class ProductController {
     public ResponseEntity productGetImage(@RequestParam("filename") Object fileName) throws IOException {
         return fileService.getImage(fileName);
     }
-    @PostMapping(value = "/api/product/getProducts")
+    /*@PostMapping(value = "/api/product/getProducts")
     public ResponseEntity productsGet(){
         return productService.getProducts();
-    }
+    }*/
     @PostMapping(value = "/api/product/getCategory")
     public ResponseEntity getCategory(){
         return ResponseEntity.ok(categoryRepository.findAll());
@@ -123,8 +123,8 @@ public class ProductController {
     @PostMapping(value = "/api/product/getPriceInfo")
     public ResponseEntity GetPrice(){
         SearchDTO searchDTO = new SearchDTO();
-        searchDTO.setMaxPrice(customTeaRepository.findMaxPrice());
-        searchDTO.setMinPrice(customTeaRepository.findMinPrice());
+        searchDTO.setMaxPrice(customTeaRepository1.findMaxPrice());
+        searchDTO.setMinPrice(customTeaRepository1.findMinPrice());
         return ResponseEntity.ok(searchDTO);
     }
     @PostMapping(value = "/api/product/addinList1")

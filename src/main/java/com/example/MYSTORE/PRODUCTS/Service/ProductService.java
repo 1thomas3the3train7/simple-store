@@ -6,6 +6,9 @@ import com.example.MYSTORE.PRODUCTS.POJO.RESULT;
 import com.example.MYSTORE.PRODUCTS.POJO.ReviewsJson;
 import com.example.MYSTORE.PRODUCTS.POJO.TEST;
 import com.example.MYSTORE.PRODUCTS.Repository.*;
+import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomCategoryRepositoryImpl;
+import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomReviewRepositoryImpl;
+import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomTeaImageRepositoryImpl;
 import com.example.MYSTORE.SECURITY.Model.User;
 import com.example.MYSTORE.SECURITY.Repository.UserRepository;
 import com.google.gson.Gson;
@@ -49,32 +52,36 @@ public class ProductService {
     private SlaiderRepository slaiderRepository;
     @Autowired
     private TeaListsRepository teaListsRepository;
+    @Autowired
+    private CustomTeaRepository customTeaRepository;
+    @Autowired
+    private CustomTeaImageRepositoryImpl customTeaImageRepository;
+    @Autowired
+    private CustomCategoryRepositoryImpl customCategoryRepository;
+    @Autowired
+    private CustomReviewRepositoryImpl customReviewRepository;
 
     private final Gson gson = new Gson();
     @Transactional(rollbackFor = Exception.class)
-    public ResponseEntity saveProduct(String teaReq, Object[] files,Object mainFile,String category) throws IOException,ClassCastException, URISyntaxException {
+    public ResponseEntity saveProduct(String teaReq, MultipartFile[] files,Object mainFile,String category) throws IOException,ClassCastException, URISyntaxException {
         try{
-            /*Gson gson = new Gson();*/
             TeaDTO teaDTO = gson.fromJson(teaReq,TeaDTO.class);
-            Tea tea = new Tea();
-            tea.setName(teaDTO.getName());tea.setPrice(teaDTO.getPrice());tea.setMainLinkImage(teaDTO.getMainLinkImage());
-            tea.setSubname(teaDTO.getSubname());
-            tea.setFermentation(teaDTO.getFermentation());tea.setAbout(teaDTO.getAbout());tea.setOldPrice(teaDTO.getOldPrice());
-            for(Object file : files){
+            Tea tea = DTO_to_Tea(teaDTO);
+            for(MultipartFile file : files){
                 TeaImage teaImage =  new TeaImage(fileService.saveFile(file));
                 teaImage.setTea(tea);
-                teaImageRepository.saveAndFlush(teaImage);
+                customTeaImageRepository.saveNewTeaImage(teaImage);
             }
+            tea.setMainLinkImage(fileService.saveFile(mainFile));
+            customTeaRepository.saveNewTea(tea);
             String[] categories = category.replace("[","").replace("]","").split(",");
             for(String c : categories){
                 if(!c.equals("undefined")){
                     RESULT result = gson.fromJson(c,RESULT.class);
-                    Category category1 = categoryRepository.findByName(result.getResult());
-                    if(category1 != null){category1.addTea(tea);categoryRepository.saveAndFlush(category1);}
+                    Category category1 = customCategoryRepository.getCategoryByName(result.getResult());
+                    if(category1 != null){customCategoryRepository.updateCategoryAndTea(category1,tea);}
                 }
             }
-            tea.setMainLinkImage(fileService.saveFile(mainFile));
-            teaRepository.save(tea);
             System.out.println("save");
             return ResponseEntity.ok("saved");
         } catch (ClassCastException e){
@@ -83,55 +90,45 @@ public class ProductService {
             return ResponseEntity.ok("Error");
         }
     }
-    public ResponseEntity uplaodProduct(String tea, Object[] files,Object filemain,String category) throws IOException,URISyntaxException{
+    public ResponseEntity uplaodProduct(String tea, MultipartFile[] files,MultipartFile filemain,String category) throws IOException,URISyntaxException{
         try{
             /*Gson gson = new Gson();*/
             TeaDTO teaDTO = gson.fromJson(tea,TeaDTO.class);
-            Tea tea1 = teaRepository.getById(teaDTO.getId());
-            tea1.setAbout(teaDTO.getAbout());tea1.setPrice(teaDTO.getPrice());tea1.setName(teaDTO.getName());
-            tea1.setMadeCountry(teaDTO.getMadeCountry());tea1.setFermentation(teaDTO.getFermentation());
-            tea1.setSubname(teaDTO.getSubname());
-            tea1.setOldPrice(teaDTO.getOldPrice());
+            Tea tea1 = customTeaRepository.getLazyTeaById(teaDTO.getId());
             if(files != null){
-                System.out.println("files");
-                Set<TeaImage> teaImages = new HashSet<>();
-                tea1.setTeaImages(teaImages);
-                teaRepository.saveAndFlush(tea1);
-                for(Object file : files){
+                System.out.println(1);
+                customTeaRepository.TeaClearTeaImageById(tea1.getId());
+                System.out.println(2);
+                for(MultipartFile file : files){
                     TeaImage teaImage =  new TeaImage(fileService.saveFile(file));
-                    teaImage.setTea(tea1);
-                    teaImageRepository.saveAndFlush(teaImage);
+                    customTeaImageRepository.updateTeaImageAndTea(teaImage,tea1);
                 }
             }
             if(category != null && category.length() > 4){
+                System.out.println("cat");
                 String[] categories = category.replace("[","").replace("]","").split(",");
-                Set<Category> categories1 = new HashSet<>();
-                tea1.setCategories(categories1);
-                teaRepository.saveAndFlush(tea1);
+                customTeaRepository.TeaClearCategoryById(tea1.getId());
                 for(String c : categories){
                     RESULT result = gson.fromJson(c,RESULT.class);
-                    Category category1 = categoryRepository.findByName(result.getResult());
-                    if(category1 != null){category1.addTea(tea1);categoryRepository.saveAndFlush(category1);}
+                    Category category1 = customCategoryRepository.getCategoryByName(result.getResult());
+                    if(category1 != null){customCategoryRepository.updateCategoryAndTea(category1,tea1);}
                 }
             }
             if(filemain != null){
                 tea1.setMainLinkImage(fileService.saveFile(filemain));
             }
-            teaRepository.saveAndFlush(tea1);
+            System.out.println(tea1.getId());
+            customTeaRepository.uploadTea(tea1);
             return ResponseEntity.ok("upload");
         } catch (ClassCastException c){
             System.out.println(c);
             return ResponseEntity.ok("invalid files");
         }
     }
-    public ResponseEntity getProducts(){
-        List<Tea> teaList = teaRepository.findAll();
-        return ResponseEntity.ok(teaList);
-    }
     public ResponseEntity upldCategory(String name){
         try {
             Category category = new Category(name);
-            categoryRepository.save(category);
+            customCategoryRepository.saveNewCategory(category);
             return ResponseEntity.ok(new RESULT("category was saved"));
         } catch (ClassCastException e){
             System.out.println(e);
@@ -171,7 +168,7 @@ public class ProductService {
     public ResponseEntity getReview(String id){
         /*Gson gson = new Gson();*/
         RESULT result = gson.fromJson(id,RESULT.class);
-        Set<Reviews> reviewsSet = lazyTeaRepository.findById(Long.parseLong(result.getResult())).getReviews();
+        Set<Reviews> reviewsSet = customReviewRepository.getReviewsByTeaId(Long.parseLong(result.getResult()));
         if(reviewsSet == null){return ResponseEntity.ok(new RESULT("reviews not found"));}
         List<ReviewsDTO> reviewsDTOS = new ArrayList<>();
         for(Reviews r : reviewsSet){
@@ -374,5 +371,14 @@ public class ProductService {
             return ResponseEntity.ok("del");
         }
         return ResponseEntity.ok("already delete or tea by id not found");
+    }
+
+    public Tea DTO_to_Tea(TeaDTO teaDTO){
+        Tea tea = new Tea();
+        if(teaDTO.getId() != null){tea.setId(teaDTO.getId());}
+        tea.setName(teaDTO.getName());tea.setPrice(teaDTO.getPrice());tea.setMainLinkImage(teaDTO.getMainLinkImage());
+        tea.setSubname(teaDTO.getSubname());
+        tea.setFermentation(teaDTO.getFermentation());tea.setAbout(teaDTO.getAbout());tea.setOldPrice(teaDTO.getOldPrice());
+        return tea;
     }
 }

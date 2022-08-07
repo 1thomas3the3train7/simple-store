@@ -17,7 +17,7 @@ public class Category {
     private Long id;
     private String name;
     @JsonIgnore
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "tea_and_category",joinColumns = @JoinColumn(name = "category_id"),inverseJoinColumns = @JoinColumn(name = "tea_id"))
     private Set<Tea> teas = new HashSet<>();
 

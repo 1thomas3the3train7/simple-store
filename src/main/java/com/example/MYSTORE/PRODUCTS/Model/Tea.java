@@ -64,7 +64,7 @@ public class Tea {
             inverseJoinColumns = @JoinColumn(name = "review_id"))
     private Set<Reviews> reviews = new HashSet<>();
     @JoinColumn
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "tea_and_image",joinColumns = @JoinColumn(name = "tea_id"),inverseJoinColumns = @JoinColumn(name = "image_id"))
     private Set<TeaImage> teaImages = new HashSet<>();
     @JsonIgnore

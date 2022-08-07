@@ -24,7 +24,7 @@ public class Reviews {
     private double grade;
     private String username;
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.PERSIST,fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinTable(name="user_and_review",joinColumns = @JoinColumn(name = "review_id"),inverseJoinColumns = @JoinColumn(name="user_id"))
     private User user;
     @JsonIgnore
