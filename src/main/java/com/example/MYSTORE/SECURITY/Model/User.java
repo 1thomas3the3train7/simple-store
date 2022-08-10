@@ -6,13 +6,18 @@ import com.example.MYSTORE.PRODUCTS.Model.TeaLists;
 import com.example.MYSTORE.SECURITY.JWT.JWTRefreshToken;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "users")
 public class User implements Serializable {
     @Id
@@ -31,11 +36,11 @@ public class User implements Serializable {
     }
     public boolean getBanned(){return this.banned;}
     @JsonIgnore
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
     @JoinTable(name="role_and_user", joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Collection<Role> roles;
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinTable(name="user_and_jwt", joinColumns = @JoinColumn(name="user_id"), inverseJoinColumns = @JoinColumn(name = "jwt_id"))
     @JsonIgnore
     private JWTRefreshToken jwtRefreshToken;
@@ -44,20 +49,17 @@ public class User implements Serializable {
     @JoinTable(name="user_and_review", joinColumns = @JoinColumn(name = "user_id"),inverseJoinColumns = @JoinColumn(name = "review_id"))
     private Set<Reviews> reviews = new HashSet<>();
     @JsonIgnore
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinTable(name="user_and_vtoken",joinColumns = @JoinColumn(name = "user_id"),inverseJoinColumns = @JoinColumn(name = "token_id"))
     private VerificationToken verificationToken;
     @JsonIgnore
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinTable(name = "user_and_rtoken",joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "token_id"))
     private ResetPasswordToken resetPasswordToken;
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_and_tea",joinColumns = @JoinColumn(name = "user_id"),inverseJoinColumns = @JoinColumn(name = "tea_id"))
     private List<Tea> teas = new ArrayList<>();
-    public void addTea(Tea tea){
-        this.teas.add(tea);
-    }
     public void delTea(Tea tea){this.teas.remove(tea);}
     public void addReview(Reviews reviews){
         this.reviews.add(reviews);

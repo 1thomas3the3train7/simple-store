@@ -14,7 +14,7 @@ public class JWTRefreshToken {
     @JsonIgnore
     private Long id;
     private String refreshToken;
-    @OneToOne( fetch = FetchType.EAGER)
+    @OneToOne
     @JoinTable(name="user_and_jwt",joinColumns = @JoinColumn(name = "jwt_id"),inverseJoinColumns = @JoinColumn(name = "user_id"))
     @JsonIgnore
     private User user;

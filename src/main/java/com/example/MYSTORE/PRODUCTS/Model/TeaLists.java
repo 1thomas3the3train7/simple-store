@@ -13,7 +13,7 @@ public class TeaLists {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "tea_and_list",joinColumns = @JoinColumn(name="list_id"),inverseJoinColumns = @JoinColumn(name="tea_id"))
     private Collection<Tea> teas1 = new ArrayList<>();
     public TeaLists(){}

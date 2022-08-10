@@ -4,13 +4,13 @@ import com.example.MYSTORE.PRODUCTS.DTO.*;
 import com.example.MYSTORE.PRODUCTS.Model.*;
 import com.example.MYSTORE.PRODUCTS.POJO.RESULT;
 import com.example.MYSTORE.PRODUCTS.POJO.ReviewsJson;
-import com.example.MYSTORE.PRODUCTS.POJO.TEST;
 import com.example.MYSTORE.PRODUCTS.Repository.*;
 import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomCategoryRepositoryImpl;
 import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomReviewRepositoryImpl;
 import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomTeaImageRepositoryImpl;
 import com.example.MYSTORE.SECURITY.Model.User;
 import com.example.MYSTORE.SECURITY.Repository.UserRepository;
+import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomUserRepositoryImpl;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,6 +60,8 @@ public class ProductService {
     private CustomCategoryRepositoryImpl customCategoryRepository;
     @Autowired
     private CustomReviewRepositoryImpl customReviewRepository;
+    @Autowired
+    private CustomUserRepositoryImpl customUserRepository;
 
     private final Gson gson = new Gson();
     @Transactional(rollbackFor = Exception.class)
@@ -92,7 +94,6 @@ public class ProductService {
     }
     public ResponseEntity uplaodProduct(String tea, MultipartFile[] files,MultipartFile filemain,String category) throws IOException,URISyntaxException{
         try{
-            /*Gson gson = new Gson();*/
             TeaDTO teaDTO = gson.fromJson(tea,TeaDTO.class);
             Tea tea1 = customTeaRepository.getLazyTeaById(teaDTO.getId());
             if(files != null){
@@ -105,7 +106,6 @@ public class ProductService {
                 }
             }
             if(category != null && category.length() > 4){
-                System.out.println("cat");
                 String[] categories = category.replace("[","").replace("]","").split(",");
                 customTeaRepository.TeaClearCategoryById(tea1.getId());
                 for(String c : categories){
@@ -117,7 +117,6 @@ public class ProductService {
             if(filemain != null){
                 tea1.setMainLinkImage(fileService.saveFile(filemain));
             }
-            System.out.println(tea1.getId());
             customTeaRepository.uploadTea(tea1);
             return ResponseEntity.ok("upload");
         } catch (ClassCastException c){
@@ -135,20 +134,12 @@ public class ProductService {
             return ResponseEntity.badRequest().body(new RESULT("ClassCastException"));
         }
     }
-    public Tea TestToTea(TEST test){
-        Tea tea = new Tea();
-        tea.setPrice(Integer.parseInt(test.getPrice()));
-        tea.setAbout(test.getAbout());
-        tea.setMadeCountry(test.getMadeCountry());
-        tea.setFermentation(test.getFermentation());
-        return tea;
-    }
     public ResponseEntity saveReview(String json, String email){
         ReviewsJson reviewsJson = gson.fromJson(json,ReviewsJson.class);
-        User user = userRepository.findByEmail(email);
-        Tea tea = teaRepository.findById(Long.parseLong(reviewsJson.getId()));
+        User user = customUserRepository.getUserByEmail(email);
+        Tea tea = customTeaRepository.getLazyTeaById(Long.parseLong(reviewsJson.getId()));
         if(user != null && tea != null){
-            List<Reviews> reviews1 = reviewsRepository.findByTea(tea);
+            List<Reviews> reviews1 = customReviewRepository.getReviewsByTeaId(tea.getId());
             Reviews reviews = new Reviews(reviewsJson.getPluses(),reviewsJson.getMinuses(),
                     reviewsJson.getComment(), reviewsJson.getGrade());
             int grd = reviews1.size();
@@ -168,7 +159,7 @@ public class ProductService {
     public ResponseEntity getReview(String id){
         /*Gson gson = new Gson();*/
         RESULT result = gson.fromJson(id,RESULT.class);
-        Set<Reviews> reviewsSet = customReviewRepository.getReviewsByTeaId(Long.parseLong(result.getResult()));
+        List<Reviews> reviewsSet = customReviewRepository.getReviewsByTeaId(Long.parseLong(result.getResult()));
         if(reviewsSet == null){return ResponseEntity.ok(new RESULT("reviews not found"));}
         List<ReviewsDTO> reviewsDTOS = new ArrayList<>();
         for(Reviews r : reviewsSet){
@@ -179,18 +170,8 @@ public class ProductService {
     }
     public ResponseEntity getTea(String id){
         try {
-            Tea tea = lazyTeaRepository.findById(Long.parseLong(id));
-            TeaDTO teaDTO = new TeaDTO();
-            teaDTO.setId(tea.getId());
-            teaDTO.setAbout(tea.getAbout());teaDTO.setFermentation(tea.getFermentation());
-            teaDTO.setGrade(tea.getGrade());teaDTO.setMadeCountry(tea.getMadeCountry());
-            teaDTO.setName(tea.getName());teaDTO.setMainLinkImage(tea.getMainLinkImage());
-            teaDTO.setPrice(tea.getPrice());teaDTO.setTeaImages(tea.getTeaImages().stream().toList());
-            teaDTO.setOldPrice(tea.getOldPrice());teaDTO.setSubname(tea.getSubname());
-            teaDTO.setReviewsDTOList(tea.getReviews().stream().map
-                    (m -> new ReviewsDTO(m.getPluses(),m.getMinuses(),m.getComment(),m.getGrade(),m.getUsername())).collect(Collectors.toList()));
-            teaDTO.setCategoryDTOList(tea.getCategories().stream().map(
-                    m -> new CategoryDTO(m.getName())).collect(Collectors.toList()));
+            Tea tea = customTeaRepository.getEagerTeaCategoryReviewImage(Long.parseLong(id));
+            TeaDTO teaDTO = Tea_to_DTO(tea);
             return ResponseEntity.ok(teaDTO);
         } catch (NullPointerException n){
             return ResponseEntity.badRequest().body("tea not found");
@@ -198,13 +179,12 @@ public class ProductService {
 
     }
     public ResponseEntity searchTea(String search){
-        /*Gson gson = new Gson();*/
         SearchDTO searchDTO = gson.fromJson(search,SearchDTO.class);
         List<Category> categories = new ArrayList<>();
         Pageable pageable = PageRequest.of(searchDTO.getPageable() - 1,10,Sort.by(Sort.Direction.ASC,"name"));
         if(searchDTO.getCategoryDTOS() != null && searchDTO.getCategoryDTOS().length >= 1){
             for(String s : searchDTO.getCategoryDTOS()){
-                Category category = categoryRepository.findByName(s);
+                Category category = customCategoryRepository.getCategoryByName(s);
                 if(category != null){categories.add(category);}
             }
             Page<Tea> teas = teaRepository.
@@ -238,27 +218,19 @@ public class ProductService {
         }
     }
     public ResponseEntity addLike(String res, Principal principal){
-       /* Gson gson = new Gson();*/
         RESULT result = gson.fromJson(res, RESULT.class);
-        Tea tea = teaRepository.getById(Long.parseLong(result.getResult()));
-        List<User> use = userRepository.findByTeasIn(List.of(tea));
-        User user = userRepository.getByEmail(principal.getName());
-        if(tea != null && principal.getName() != null && !use.contains(user)){
-            user.addTea(tea);
-            userRepository.save(user);
-            return ResponseEntity.ok(new RESULT("add"));
+        User user = customUserRepository.getUserByTeaIdAndEmail(Long.parseLong(result.getResult()),principal.getName());
+        if(user != null){
+            customTeaRepository.updateTeaAndUser(Long.parseLong(result.getResult()),user.getId());
+            return ResponseEntity.ok("add");
         }
         return ResponseEntity.ok(new RESULT("exc"));
     }
     public ResponseEntity delLike(String res,Principal principal){
-        /*Gson gson = new Gson();*/
         RESULT result = gson.fromJson(res,RESULT.class);
-        Tea tea = teaRepository.getById(Long.parseLong(result.getResult()));
-        List<User> use = userRepository.findByTeasIn(List.of(tea));
-        User user = userRepository.getByEmail(principal.getName());
-        if(tea != null && principal.getName() != null && use.contains(user)){
-            user.delTea(tea);
-            userRepository.save(user);
+        User user = customUserRepository.getUserByTeaIdAndEmail(Long.parseLong(result.getResult()),principal.getName());
+        if(user != null){
+            customTeaRepository.deleteRelationTeaAndUser(Long.parseLong(result.getResult()), user.getId());
             return ResponseEntity.ok("Remove");
         }
         return ResponseEntity.ok("exc");
@@ -380,5 +352,19 @@ public class ProductService {
         tea.setSubname(teaDTO.getSubname());
         tea.setFermentation(teaDTO.getFermentation());tea.setAbout(teaDTO.getAbout());tea.setOldPrice(teaDTO.getOldPrice());
         return tea;
+    }
+    public TeaDTO Tea_to_DTO(Tea tea){
+        TeaDTO teaDTO = new TeaDTO();
+        teaDTO.setId(tea.getId());
+        teaDTO.setAbout(tea.getAbout());teaDTO.setFermentation(tea.getFermentation());
+        teaDTO.setGrade(tea.getGrade());teaDTO.setMadeCountry(tea.getMadeCountry());
+        teaDTO.setName(tea.getName());teaDTO.setMainLinkImage(tea.getMainLinkImage());
+        teaDTO.setPrice(tea.getPrice());teaDTO.setTeaImages(tea.getTeaImages().stream().toList());
+        teaDTO.setOldPrice(tea.getOldPrice());teaDTO.setSubname(tea.getSubname());
+        teaDTO.setReviewsDTOList(tea.getReviews().stream().map
+                (m -> new ReviewsDTO(m.getPluses(),m.getMinuses(),m.getComment(),m.getGrade(),m.getUsername())).collect(Collectors.toList()));
+        teaDTO.setCategoryDTOList(tea.getCategories().stream().map(
+                m -> new CategoryDTO(m.getName())).collect(Collectors.toList()));
+        return teaDTO;
     }
 }
