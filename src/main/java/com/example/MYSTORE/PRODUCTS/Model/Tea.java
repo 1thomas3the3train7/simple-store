@@ -84,16 +84,22 @@ public class Tea {
     public void delList(TeaLists teaLists){
         this.teaLists.remove(teaLists);
     }
-    public void addReview(Reviews reviews){
-        this.reviews.add(reviews);
-    }
-    public void addCategory(Category category){
-        this.categories.add(category);
-        category.getTeas().add(this);
-    }
-    public void addTeaImage(TeaImage teaImage){
-        this.teaImages.add(teaImage);
-        teaImage.setTea(this);
-    }
 
+    @Override
+    public String toString() {
+        return "Tea{" +
+                "id=" + id +
+                ", subname='" + subname + '\'' +
+                ", name='" + name + '\'' +
+                ", madeCountry='" + madeCountry + '\'' +
+                ", about='" + about + '\'' +
+                ", fermentation='" + fermentation + '\'' +
+                ", price=" + price +
+                ", oldPrice=" + oldPrice +
+                ", methodCook='" + methodCook + '\'' +
+                ", mainLinkImage='" + mainLinkImage + '\'' +
+                ", presence=" + presence +
+                ", grade=" + grade +
+                '}';
+    }
 }

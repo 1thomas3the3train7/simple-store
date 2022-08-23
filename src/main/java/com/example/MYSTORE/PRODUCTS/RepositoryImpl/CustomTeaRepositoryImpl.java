@@ -9,6 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.util.List;
+import java.util.Set;
 
 
 @Service
@@ -62,14 +65,15 @@ public class CustomTeaRepositoryImpl implements CustomTeaRepository {
     @Transactional
     public void uploadTea(Tea tea) {
         em.createQuery("update Tea t set t.name = ?1, t.about = ?2, t.price = ?3," +
-                " t.oldPrice = ?4, t.subname = ?5, t.mainLinkImage = ?6 where t.id = ?7")
+                " t.oldPrice = ?4, t.subname = ?5, t.mainLinkImage = ?6, t.grade = ?7 where t.id = ?8")
                 .setParameter(1,tea.getName())
                 .setParameter(2,tea.getAbout())
                 .setParameter(3,tea.getPrice())
                 .setParameter(4,tea.getOldPrice())
                 .setParameter(5,tea.getSubname())
                 .setParameter(6,tea.getMainLinkImage())
-                .setParameter(7,tea.getId())
+                .setParameter(7,tea.getGrade())
+                .setParameter(8,tea.getId())
                 .executeUpdate();
     }
 
@@ -104,5 +108,43 @@ public class CustomTeaRepositoryImpl implements CustomTeaRepository {
                 .setParameter(1,teaId)
                 .setParameter(2,userId)
                 .executeUpdate();
+    }
+
+    @Override
+    @Transactional
+    public List<Tea> findTeaByNameAndPriceAndCategoryName
+            (String name, Set<String> categories, int minprice, int maxprice,int page) {
+        final int resPage = 10 * (page - 1);
+        List<Tea> teas = em.createQuery("select t from Tea t " +
+                " join t.categories as tc where tc.name in (:CatName) and t.name like :TeaName " +
+                        "and t.price >= :minPrice and t.price <= :maxPrice " +
+                        "group by t having count(t) >= :SizeCat " +
+                        "order by t.name ASC",Tea.class)
+                .setParameter("TeaName","%" + name + "%")
+                .setParameter("CatName",categories)
+                .setParameter("minPrice",minprice)
+                .setParameter("maxPrice",maxprice)
+                .setParameter("SizeCat",Long.parseLong(Integer.toString(categories.size())))
+                .setFirstResult(resPage)
+                .setMaxResults(10)
+                .getResultList();
+        return teas;
+    }
+
+    @Override
+    @Transactional
+    public List<Tea> findTeaByNameAndPriceAndCategoryName(String name, int minprice, int maxprice, int page) {
+        final int resPage = 10 * (page - 1);
+        List<Tea> teas = em.createQuery("select t from Tea t " +
+                        " join t.categories as tc where t.name like :TeaName " +
+                        "and t.price >= :minPrice and t.price <= :maxPrice " +
+                        "order by t.name ASC",Tea.class)
+                .setParameter("TeaName","%" + name + "%")
+                .setParameter("minPrice",minprice)
+                .setParameter("maxPrice",maxprice)
+                .setFirstResult(resPage)
+                .setMaxResults(10)
+                .getResultList();
+        return teas;
     }
 }

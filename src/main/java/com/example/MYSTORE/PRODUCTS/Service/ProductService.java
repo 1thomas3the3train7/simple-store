@@ -7,6 +7,7 @@ import com.example.MYSTORE.PRODUCTS.POJO.ReviewsJson;
 import com.example.MYSTORE.PRODUCTS.Repository.*;
 import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomCategoryRepositoryImpl;
 import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomReviewRepositoryImpl;
+import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomSlaiderRepositoryImpl;
 import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomTeaImageRepositoryImpl;
 import com.example.MYSTORE.SECURITY.Model.User;
 import com.example.MYSTORE.SECURITY.Repository.UserRepository;
@@ -62,6 +63,8 @@ public class ProductService {
     private CustomReviewRepositoryImpl customReviewRepository;
     @Autowired
     private CustomUserRepositoryImpl customUserRepository;
+    @Autowired
+    private CustomSlaiderRepositoryImpl customSlaiderRepository;
 
     private final Gson gson = new Gson();
     @Transactional(rollbackFor = Exception.class)
@@ -94,6 +97,7 @@ public class ProductService {
     }
     public ResponseEntity uplaodProduct(String tea, MultipartFile[] files,MultipartFile filemain,String category) throws IOException,URISyntaxException{
         try{
+            //TODO method dont work
             TeaDTO teaDTO = gson.fromJson(tea,TeaDTO.class);
             Tea tea1 = customTeaRepository.getLazyTeaById(teaDTO.getId());
             if(files != null){
@@ -117,6 +121,7 @@ public class ProductService {
             if(filemain != null){
                 tea1.setMainLinkImage(fileService.saveFile(filemain));
             }
+            System.out.println();
             customTeaRepository.uploadTea(tea1);
             return ResponseEntity.ok("upload");
         } catch (ClassCastException c){
@@ -139,25 +144,22 @@ public class ProductService {
         User user = customUserRepository.getUserByEmail(email);
         Tea tea = customTeaRepository.getLazyTeaById(Long.parseLong(reviewsJson.getId()));
         if(user != null && tea != null){
-            List<Reviews> reviews1 = customReviewRepository.getReviewsByTeaId(tea.getId());
             Reviews reviews = new Reviews(reviewsJson.getPluses(),reviewsJson.getMinuses(),
                     reviewsJson.getComment(), reviewsJson.getGrade());
-            int grd = reviews1.size();
+            int grd = Integer.parseInt(customReviewRepository.countReviewsByTea(tea).toString());
             double grd1 = tea.getGrade();
             if(grd1 > 0){tea.setGrade(grd1 * (grd) / (grd + 1) + reviews.getGrade()/(grd + 1));}
             else {tea.setGrade(reviews.getGrade());};
             reviews.setUsername(user.getUsername());
-            reviews.setTea(tea);
-            reviews.setUser(user);
-            reviewsRepository.save(reviews);
-            user.addReview(reviews);
-            tea.addReview(reviews);
+            customTeaRepository.uploadTea(tea);
+            customReviewRepository.saveNewReview(reviews);
+            customReviewRepository.updateReviewAndTea(reviews,tea);
+            customReviewRepository.updateReviewAndUser(reviews,user);
             return ResponseEntity.ok(new RESULT("saved"));
         }
         return ResponseEntity.ok(null);
     }
     public ResponseEntity getReview(String id){
-        /*Gson gson = new Gson();*/
         RESULT result = gson.fromJson(id,RESULT.class);
         List<Reviews> reviewsSet = customReviewRepository.getReviewsByTeaId(Long.parseLong(result.getResult()));
         if(reviewsSet == null){return ResponseEntity.ok(new RESULT("reviews not found"));}
@@ -180,42 +182,23 @@ public class ProductService {
     }
     public ResponseEntity searchTea(String search){
         SearchDTO searchDTO = gson.fromJson(search,SearchDTO.class);
-        List<Category> categories = new ArrayList<>();
-        Pageable pageable = PageRequest.of(searchDTO.getPageable() - 1,10,Sort.by(Sort.Direction.ASC,"name"));
-        if(searchDTO.getCategoryDTOS() != null && searchDTO.getCategoryDTOS().length >= 1){
-            for(String s : searchDTO.getCategoryDTOS()){
-                Category category = customCategoryRepository.getCategoryByName(s);
-                if(category != null){categories.add(category);}
-            }
-            Page<Tea> teas = teaRepository.
-                    findByNameContainingAndPriceLessThanEqualAndPriceGreaterThanEqualAndCategoriesInOrderByNameAsc(searchDTO.getName(),
-                    searchDTO.getMaxPrice(),searchDTO.getMinPrice(),categories,pageable);
-            List<TeaDTO> teaDTOS = new ArrayList<>();
-            for(Tea m : teas){
-                teaDTOS.add(new TeaDTO(m.getId(),m.getName(),m.getMadeCountry(),m.getAbout(),m.getFermentation(),
-                        m.getPrice(),m.getMethodCook(),m.getMainLinkImage(),m.getPresence(),m.getGrade(),m.getOldPrice()));
-            }
-            SearchDTO searchDTO1 = new SearchDTO();
-            searchDTO1.setTeaDTOS(teaDTOS);
-            searchDTO1.setCount(teas.getTotalPages());
-            System.out.println(teas.getTotalPages());
-            return ResponseEntity.ok(searchDTO1);
-        } else {
-            Page<Tea> teas = teaRepository.
-                    findByNameContainingAndPriceLessThanEqualAndPriceGreaterThanEqualOrderByNameAsc(
-                    searchDTO.getName(),searchDTO.getMaxPrice(),searchDTO.getMinPrice(),pageable
+        Set<String> categories = searchDTO.getCategoryDTOS();
+        List<Tea> teas;
+        if(categories != null && categories.size() >= 1){
+            teas = customTeaRepository.findTeaByNameAndPriceAndCategoryName(
+                    searchDTO.getName(),categories,searchDTO.getMinPrice(),searchDTO.getMaxPrice(), searchDTO.getPageable()
             );
-            List<TeaDTO> teaDTOS = new ArrayList<>();
-            for(Tea m : teas){
-                teaDTOS.add(new TeaDTO(m.getId(),m.getName(),m.getMadeCountry(),m.getAbout(),m.getFermentation(),
-                        m.getPrice(),m.getMethodCook(),m.getMainLinkImage(),m.getPresence(),m.getGrade(),m.getOldPrice()));
-            }
-            SearchDTO searchDTO1 = new SearchDTO();
-            searchDTO1.setTeaDTOS(teaDTOS);
-            searchDTO1.setCount(teas.getTotalPages());
-            System.out.println(teas.getTotalPages());
-            return ResponseEntity.ok(searchDTO1);
+        }else{
+            teas = customTeaRepository.findTeaByNameAndPriceAndCategoryName(
+                    searchDTO.getName(),searchDTO.getMinPrice(),searchDTO.getMaxPrice(), searchDTO.getPageable()
+            );
         }
+        List<TeaDTO> teaDTOS = new ArrayList<>();
+        teas.forEach(t -> teaDTOS.add(TeaLazy_to_DTO(t)));
+        SearchDTO searchDTO1 = new SearchDTO();
+        searchDTO1.setTeaDTOS(teaDTOS);
+        searchDTO1.setCount(searchDTO.getPageable());
+        return ResponseEntity.ok(searchDTO1);
     }
     public ResponseEntity addLike(String res, Principal principal){
         RESULT result = gson.fromJson(res, RESULT.class);
@@ -236,7 +219,7 @@ public class ProductService {
         return ResponseEntity.ok("exc");
     }
     public ResponseEntity uploadSlaiderleft(MultipartFile[] multipartFiles,boolean del) throws IOException,URISyntaxException{
-        SlaiderImages slaiderImages = slaiderRepository.findByName("leftslaider");
+        SlaiderImages slaiderImages = customSlaiderRepository.getSlaiderAndTeaImageByName("leftslaider");
         if(del){teaImageRepository.deleteAllInBatch(slaiderImages.getTeaImages());slaiderImages.getTeaImages().clear();}
         if(slaiderImages == null){return ResponseEntity.ok("slaider not found");}
         for(MultipartFile mf : multipartFiles){
@@ -365,6 +348,13 @@ public class ProductService {
                 (m -> new ReviewsDTO(m.getPluses(),m.getMinuses(),m.getComment(),m.getGrade(),m.getUsername())).collect(Collectors.toList()));
         teaDTO.setCategoryDTOList(tea.getCategories().stream().map(
                 m -> new CategoryDTO(m.getName())).collect(Collectors.toList()));
+        return teaDTO;
+    }
+    public TeaDTO TeaLazy_to_DTO(Tea tea){
+        TeaDTO teaDTO = new TeaDTO();
+        teaDTO.setId(tea.getId());teaDTO.setPrice(teaDTO.getPrice());
+        teaDTO.setOldPrice(tea.getOldPrice());teaDTO.setSubname(tea.getSubname());
+        teaDTO.setMainLinkImage(tea.getMainLinkImage());
         return teaDTO;
     }
 }

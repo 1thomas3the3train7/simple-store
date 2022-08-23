@@ -13,7 +13,7 @@ public class SlaiderImages {
     private Long id;
 
     private String name;
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "slaider_and_image",joinColumns = @JoinColumn(name = "slaider_id"),inverseJoinColumns = @JoinColumn(name = "image_id"))
     private Collection<TeaImage> teaImages;
     public void addImage(TeaImage teaImage){

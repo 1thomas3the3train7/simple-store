@@ -3,6 +3,9 @@ package com.example.MYSTORE.PRODUCTS.Repository;
 import com.example.MYSTORE.PRODUCTS.Model.Tea;
 import com.example.MYSTORE.SECURITY.Model.User;
 
+import java.util.List;
+import java.util.Set;
+
 public interface CustomTeaRepository {
     Tea getLazyTeaById(Long id);
 
@@ -15,5 +18,9 @@ public interface CustomTeaRepository {
     void updateTeaAndUser(Tea tea, User user);
     void updateTeaAndUser(Long teaId, Long userId);
     void deleteRelationTeaAndUser(Long teaId,Long userId);
+    List<Tea> findTeaByNameAndPriceAndCategoryName
+            (String name,Set<String> categories,int minprice,int maxprice,int resPage);
+    List<Tea> findTeaByNameAndPriceAndCategoryName
+            (String name,int minprice,int maxprice,int resPage);
 
 }

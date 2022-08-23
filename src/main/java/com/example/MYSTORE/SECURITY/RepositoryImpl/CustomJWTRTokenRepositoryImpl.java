@@ -39,8 +39,30 @@ public class CustomJWTRTokenRepositoryImpl implements CustomJWTRefreshTokenRepos
     @Transactional
     public JWTRefreshToken getJWTRTokenByRefreshToken(String token) {
         JWTRefreshToken jwtRefreshToken = em.createQuery("select jwt from JWTRefreshToken jwt " +
-                "wher jwt.refreshToken = ?1",JWTRefreshToken.class)
+                "where jwt.refreshToken = ?1",JWTRefreshToken.class)
                 .setParameter(1,token)
+                .getResultList().stream().findFirst().orElse(null);
+        return jwtRefreshToken;
+    }
+
+    @Override
+    @Transactional
+    public void deleteJWTRTokenByUserEmail(String email) {
+        JWTRefreshToken jwtRefreshToken = em.createQuery("select jwt from JWTRefreshToken jwt " +
+                "left join jwt.user u where u.email =?1",JWTRefreshToken.class)
+                .setParameter(1,email)
+                .getResultList().stream().findFirst().orElse(null);
+        if(jwtRefreshToken != null){
+            em.remove(jwtRefreshToken);
+        }
+    }
+
+    @Override
+    @Transactional
+    public JWTRefreshToken getJWTRTokenByUserEmail(String email) {
+        JWTRefreshToken jwtRefreshToken = em.createQuery("select jwt from JWTRefreshToken jwt " +
+                "left join jwt.user u where u.email = ?1",JWTRefreshToken.class)
+                .setParameter(1,email)
                 .getResultList().stream().findFirst().orElse(null);
         return jwtRefreshToken;
     }

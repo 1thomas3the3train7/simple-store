@@ -30,7 +30,7 @@ public class CustomRTokenRepositoryImpl implements CustomRefreshTokenRepository 
     @Transactional
     public ResetPasswordToken getRTokenByUser(User user) {
         ResetPasswordToken resetPasswordToken = em.createQuery("select rt from ResetPasswordToken rt " +
-                        "lef join rt.user rtu where rtu.id = ?1",ResetPasswordToken.class)
+                        "left join rt.user rtu where rtu.id = ?1",ResetPasswordToken.class)
                 .setParameter(1,user.getId())
                 .getResultList().stream().findFirst().orElse(null);
         return resetPasswordToken;

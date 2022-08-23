@@ -11,4 +11,5 @@ public interface CustomUserRepository {
     User getUserByJWTRefreshToken(JWTRefreshToken jwtRefreshToken);
     void updateUser(User user);
     User getUserByTeaIdAndEmail(Long id,String email);
+    User getUserAndRoleByEmail(String email);
 }

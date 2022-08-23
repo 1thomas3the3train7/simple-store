@@ -1,8 +1,9 @@
 package com.example.MYSTORE.SECURITY.JWT;
 
 import com.example.MYSTORE.SECURITY.Model.User;
-import com.example.MYSTORE.SECURITY.Repository.JWTRefreshTokenRepository;
 import com.example.MYSTORE.SECURITY.Repository.UserRepository;
+import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomJWTRTokenRepositoryImpl;
+import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomUserRepositoryImpl;
 import io.jsonwebtoken.Claims;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -24,26 +25,25 @@ public class JWTAuthorization {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private JWTRefreshTokenRepository jwtRefreshTokenRepository;
+    private CustomJWTRTokenRepositoryImpl customJWTRTokenRepository;
+    @Autowired
+    private CustomUserRepositoryImpl customUserRepository;
     @Autowired
     private JWTProvider jwtProvider;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    @Transactional
     public JWTResponse login(@NonNull JWTRequest authRequest, HttpServletResponse response) {
         System.out.println(authRequest.getPassword());
         System.out.println(authRequest.getEmail());
-        final User user = userRepository.findByEmail(authRequest.getEmail());
+        final User user = customUserRepository.getUserByEmail(authRequest.getEmail());
         if (user != null){
             if (passwordEncoder.matches(authRequest.getPassword(), user.getPassword())) {
-                JWTRefreshToken jwtRefreshToken1 = user.getJwtRefreshToken();
-                if(jwtRefreshToken1 != null){jwtRefreshTokenRepository.deleteByUser(user);}
+                customJWTRTokenRepository.deleteJWTRTokenByUserEmail(user.getEmail());
                 final String accessToken = jwtProvider.generateAccessToken(user);
                 final String refreshToken = jwtProvider.generateRefreshToken(user);
                 final JWTRefreshToken jwtRefreshToken = new JWTRefreshToken(jwtProvider.generateRefreshToken(user));
-                user.setJwtRefreshToken(jwtRefreshToken);
-                jwtRefreshTokenRepository.save(jwtRefreshToken);
-                userRepository.save(user);
+                customJWTRTokenRepository.saveNewJWTRToken(jwtRefreshToken);
+                customJWTRTokenRepository.updateJWTRTokenAndUser(jwtRefreshToken,user);
                 final Cookie cookie = new Cookie("refreshToken",refreshToken);
                 cookie.setHttpOnly(true);
                 cookie.setPath("/");
@@ -64,9 +64,9 @@ public class JWTAuthorization {
                 if (jwtProvider.validateRefreshToken(refreshToken)) {
                     final Claims claims = jwtProvider.getRefreshClaims(refreshToken);
                     final String login = claims.getSubject();
-                    final User user = userRepository.findByEmail(login);
+                    final User user = customUserRepository.getUserAndRoleByEmail(login);
                     if(user != null) {
-                        final JWTRefreshToken jwtRefreshToken = jwtRefreshTokenRepository.findByUser(user);
+                        final JWTRefreshToken jwtRefreshToken = customJWTRTokenRepository.getJWTRTokenByUserEmail(login);
                         if (jwtRefreshToken != null && jwtRefreshToken.getRefreshToken().equals(refreshToken)) {
                             final String accessToken = jwtProvider.generateAccessToken(user);
                             return new JWTResponse(accessToken);
@@ -86,15 +86,15 @@ public class JWTAuthorization {
             if (jwtProvider.validateRefreshToken(refreshToken)) {
                 final Claims claims = jwtProvider.getRefreshClaims(refreshToken);
                 final String login = claims.getSubject();
-                final User user = userRepository.findByEmail(login);
-                final JWTRefreshToken jwtRefreshToken = jwtRefreshTokenRepository.findByUser(user);
+                final User user = customUserRepository.getUserAndRoleByEmail(login);
+                final JWTRefreshToken jwtRefreshToken = customJWTRTokenRepository.getJWTRTokenByUserEmail(login);
                 final String jwtRefresh = jwtRefreshToken.getRefreshToken();
                 if (jwtRefresh != null && jwtRefresh.equals(refreshToken)){
                     final String accessToken = jwtProvider.generateAccessToken(user);
                     final JWTRefreshToken jwtRefreshToken1 = new JWTRefreshToken(jwtProvider.generateRefreshToken(user));
-                    jwtRefreshTokenRepository.delete(jwtRefreshToken);
-                    user.setJwtRefreshToken(jwtRefreshToken1);
-                    jwtRefreshTokenRepository.save(jwtRefreshToken1);
+                    customJWTRTokenRepository.deleteJWTRToken(jwtRefreshToken);
+                    customJWTRTokenRepository.saveNewJWTRToken(jwtRefreshToken1);
+                    customJWTRTokenRepository.updateJWTRTokenAndUser(jwtRefreshToken1,user);
                     return new JWTResponse(accessToken);
                 }
             }

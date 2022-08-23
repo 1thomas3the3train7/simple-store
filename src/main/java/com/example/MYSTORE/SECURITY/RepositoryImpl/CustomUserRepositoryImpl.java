@@ -75,4 +75,12 @@ public class CustomUserRepositoryImpl implements CustomUserRepository {
                 .getResultList().stream().findFirst().orElse(null);
         return user;
     }
+
+    @Override
+    public User getUserAndRoleByEmail(String email) {
+        User user = em.createQuery("select u from User u left join fetch u.roles ur u.email = ?1",User.class)
+                .setParameter(1,email)
+                .getResultList().stream().findFirst().orElse(null);
+        return null;
+    }
 }

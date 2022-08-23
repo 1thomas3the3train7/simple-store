@@ -2,12 +2,16 @@ package com.example.MYSTORE.PRODUCTS.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class TeaImage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +24,7 @@ public class TeaImage {
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "slaider_and_image",joinColumns = @JoinColumn(name = "image_id"),inverseJoinColumns = @JoinColumn(name = "slaider_id"))
-    private Collection<SlaiderImages> slaiderImages;
+    private Collection<SlaiderImages> slaiderImages = new ArrayList<>();
 
     public TeaImage() {
     }

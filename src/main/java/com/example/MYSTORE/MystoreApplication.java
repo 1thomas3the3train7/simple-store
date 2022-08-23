@@ -1,11 +1,8 @@
 package com.example.MYSTORE;
-import com.example.MYSTORE.PRODUCTS.Model.Reviews;
-import com.example.MYSTORE.PRODUCTS.Model.Tea;
-import com.example.MYSTORE.PRODUCTS.Model.TeaImage;
+import com.example.MYSTORE.PRODUCTS.Model.*;
 import com.example.MYSTORE.PRODUCTS.Repository.LazyTeaRepository;
-import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomReviewRepositoryImpl;
-import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomTeaImageRepositoryImpl;
-import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomTeaRepositoryImpl;
+import com.example.MYSTORE.PRODUCTS.Repository.TeaRepository;
+import com.example.MYSTORE.PRODUCTS.RepositoryImpl.*;
 import com.example.MYSTORE.SECURITY.JWT.JWTRefreshToken;
 import com.example.MYSTORE.SECURITY.Model.Role;
 import com.example.MYSTORE.SECURITY.Model.User;
@@ -19,11 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @SpringBootApplication
 public class MystoreApplication implements CommandLineRunner {
@@ -47,6 +46,12 @@ public class MystoreApplication implements CommandLineRunner {
 	private UserRepository userRepository;
 	@Autowired
 	private CustomTeaImageRepositoryImpl customTeaImageRepository;
+	@Autowired
+	private CustomSlaiderRepositoryImpl customSlaiderRepository;
+	@Autowired
+	private CustomCategoryRepositoryImpl customCategoryRepository;
+	@Autowired
+	private TeaRepository teaRepository;
 	public static void main(String[] args) {
 		SpringApplication.run(MystoreApplication.class, args);
 	}
@@ -54,15 +59,7 @@ public class MystoreApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		User user = new User("email","password");
-		Tea tea = new Tea();tea.setName("NAME");
-		TeaImage teaImage = new TeaImage(UUID.randomUUID().toString());
-		customTeaImageRepository.saveNewTeaImage(teaImage);
-		System.out.println(teaImage.getId());
-		customTeaImageRepository.updateTeaImageAndTea(teaImage,tea);
-		customTeaRepository.saveNewTea(tea);
-		customUserRepository.saveNewUser(user);
-		customTeaRepository.updateTeaAndUser(tea,user);
-		customTeaRepository.deleteRelationTeaAndUser(tea.getId(), user.getId());
-
+		user.setRoles(Set.of(new Role("ROLE_ADMIN")));
+		userService.SaveUser(user);
 	}
 }

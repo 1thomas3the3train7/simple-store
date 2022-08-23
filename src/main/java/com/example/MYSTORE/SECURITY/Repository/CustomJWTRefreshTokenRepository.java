@@ -8,4 +8,6 @@ public interface CustomJWTRefreshTokenRepository {
     void deleteJWTRToken(JWTRefreshToken jwtRefreshToken);
     void updateJWTRTokenAndUser(JWTRefreshToken jwtRefreshToken, User user);
     JWTRefreshToken getJWTRTokenByRefreshToken(String token);
+    void deleteJWTRTokenByUserEmail(String email);
+    JWTRefreshToken getJWTRTokenByUserEmail(String email);
 }
