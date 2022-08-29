@@ -50,11 +50,6 @@ public class TeaService {
         try{
             TeaDTO teaDTO = gson.fromJson(teaReq,TeaDTO.class);
             Tea tea = productUtils.DTO_to_Tea(teaDTO);
-            for(MultipartFile file : files){
-                TeaImage teaImage =  new TeaImage(fileService.saveFile(file));
-                teaImage.setTea(tea);
-                customTeaImageRepository.saveNewTeaImage(teaImage);
-            }
             tea.setMainLinkImage(fileService.saveFile(mainFile));
             customTeaRepository.saveNewTea(tea);
             String[] categories = category.replace("[","").replace("]","").split(",");
@@ -64,6 +59,11 @@ public class TeaService {
                     Category category1 = customCategoryRepository.getCategoryByName(result.getResult());
                     if(category1 != null){customCategoryRepository.updateCategoryAndTea(category1,tea);}
                 }
+            }
+            for(MultipartFile file : files){
+                TeaImage teaImage =  new TeaImage(fileService.saveFile(file));
+                customTeaImageRepository.saveNewTeaImage(teaImage);
+                customTeaImageRepository.updateTeaImageAndTea(teaImage,tea);
             }
             System.out.println("save");
             return ResponseEntity.ok("saved");

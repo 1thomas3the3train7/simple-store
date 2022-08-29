@@ -27,7 +27,8 @@ public class CustomTeaImageRepositoryImpl implements CustomTeaImageRepository {
     public void updateTeaImageAndTea(TeaImage teaImage, Tea tea) {
         em.createNativeQuery("insert into tea_and_image (tea_id,image_id) values(?1,?2)")
                 .setParameter(1,tea.getId())
-                .setParameter(2,teaImage.getId());
+                .setParameter(2,teaImage.getId())
+                .executeUpdate();
     }
 
     @Override

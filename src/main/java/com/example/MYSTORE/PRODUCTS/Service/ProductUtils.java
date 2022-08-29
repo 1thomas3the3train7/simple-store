@@ -36,7 +36,7 @@ public class ProductUtils {
     }
     public TeaDTO TeaLazy_to_DTO(Tea tea){
         TeaDTO teaDTO = new TeaDTO();
-        teaDTO.setId(tea.getId());teaDTO.setPrice(teaDTO.getPrice());
+        teaDTO.setId(tea.getId());teaDTO.setPrice(tea.getPrice());teaDTO.setName(tea.getName());
         teaDTO.setOldPrice(tea.getOldPrice());teaDTO.setSubname(tea.getSubname());
         teaDTO.setMainLinkImage(tea.getMainLinkImage());teaDTO.setGrade(tea.getGrade());
         return teaDTO;
