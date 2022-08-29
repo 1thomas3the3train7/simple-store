@@ -31,20 +31,24 @@ import java.util.UUID;
 public class UserService {
     @Value("${frontend.url}")
     private String myurl;
+    private final PasswordEncoder passwordEncoder;
+    private final JavaMailSender mailSender;
+    private final CustomUserRepositoryImpl customUserRepository;
+    private final CustomVTokenRepositoryImpl customVTokenRepository;
+    private final CustomRTokenRepositoryImpl customRTokenRepository;
+    private final CustomJWTRTokenRepositoryImpl customJWTRTokenRepository;
     @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private JavaMailSender mailSender;
-    @Autowired
-    private CustomUserRepositoryImpl customUserRepository;
-    @Autowired
-    private CustomVTokenRepositoryImpl customVTokenRepository;
-    @Autowired
-    private CustomRTokenRepositoryImpl customRTokenRepository;
-    @Autowired
-    private CustomJWTRTokenRepositoryImpl customJWTRTokenRepository;
+    public UserService(PasswordEncoder passwordEncoder, JavaMailSender mailSender,
+                       CustomUserRepositoryImpl customUserRepository, CustomVTokenRepositoryImpl customVTokenRepository,
+                       CustomRTokenRepositoryImpl customRTokenRepository, CustomJWTRTokenRepositoryImpl customJWTRTokenRepository) {
+        this.passwordEncoder = passwordEncoder;
+        this.mailSender = mailSender;
+        this.customUserRepository = customUserRepository;
+        this.customVTokenRepository = customVTokenRepository;
+        this.customRTokenRepository = customRTokenRepository;
+        this.customJWTRTokenRepository = customJWTRTokenRepository;
+    }
 
-    @Transactional(rollbackFor = Exception.class)
     public boolean SaveUser(User user){
         User user1 = customUserRepository.getUserByEmail(user.getEmail());
         if(user1 == null){
@@ -79,7 +83,6 @@ public class UserService {
         customRTokenRepository.saveNewRToken(resetPasswordToken);
         customRTokenRepository.updateRTokenAndUser(resetPasswordToken,user);
     }
-    @Transactional
     public void LogoutUser(String refreshToken){
         final JWTRefreshToken jwtRefreshToken = customJWTRTokenRepository.getJWTRTokenByRefreshToken(refreshToken);
         if(jwtRefreshToken != null){
@@ -111,7 +114,6 @@ public class UserService {
             return ResponseEntity.ok(staleStateException.toString());
         }
     }
-    @Transactional
     public ResponseEntity confirmUser(String token,String email){
         User user = customUserRepository.getUserByEmail(email);
         if(user == null){return ResponseEntity.ok("not found user");}
@@ -127,7 +129,6 @@ public class UserService {
         }
         return ResponseEntity.ok("not found token");
     }
-    @Transactional
     public ResponseEntity resetPassword(String res){
         Gson gson = new Gson();
         RESULT result = gson.fromJson(res,RESULT.class);
@@ -144,7 +145,6 @@ public class UserService {
         sendEmail(recipientAddress,subject,confirmationUrl);
         return ResponseEntity.ok("Email send");
     }
-    @Transactional
     public ResponseEntity ConfirmResetPassword(String res){
         Gson gson = new Gson();
         ResetPasswordDTO resetPasswordDTO = gson.fromJson(res,ResetPasswordDTO.class);

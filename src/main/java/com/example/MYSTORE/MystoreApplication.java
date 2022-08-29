@@ -1,13 +1,11 @@
 package com.example.MYSTORE;
-import com.example.MYSTORE.PRODUCTS.Model.*;
-import com.example.MYSTORE.PRODUCTS.Repository.LazyTeaRepository;
-import com.example.MYSTORE.PRODUCTS.Repository.TeaRepository;
+
+import com.example.MYSTORE.PRODUCTS.Model.Tea;
 import com.example.MYSTORE.PRODUCTS.RepositoryImpl.*;
-import com.example.MYSTORE.SECURITY.JWT.JWTRefreshToken;
+
 import com.example.MYSTORE.SECURITY.Model.Role;
 import com.example.MYSTORE.SECURITY.Model.User;
-import com.example.MYSTORE.SECURITY.Model.VerificationToken;
-import com.example.MYSTORE.SECURITY.Repository.UserRepository;
+
 import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomJWTRTokenRepositoryImpl;
 import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomUserRepositoryImpl;
 import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomVTokenRepositoryImpl;
@@ -16,9 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -33,8 +30,6 @@ public class MystoreApplication implements CommandLineRunner {
 	@Autowired
 	private CustomTeaRepositoryImpl customTeaRepository;
 	@Autowired
-	private LazyTeaRepository lazyTeaRepository;
-	@Autowired
 	private CustomUserRepositoryImpl customUserRepository;
 	@Autowired
 	private CustomVTokenRepositoryImpl customVTokenRepository;
@@ -43,15 +38,13 @@ public class MystoreApplication implements CommandLineRunner {
 	@Autowired
 	private CustomReviewRepositoryImpl customReviewRepository;
 	@Autowired
-	private UserRepository userRepository;
-	@Autowired
 	private CustomTeaImageRepositoryImpl customTeaImageRepository;
 	@Autowired
 	private CustomSlaiderRepositoryImpl customSlaiderRepository;
 	@Autowired
 	private CustomCategoryRepositoryImpl customCategoryRepository;
 	@Autowired
-	private TeaRepository teaRepository;
+	private CustomTeaListRepositoryImpl customTeaListRepository;
 	public static void main(String[] args) {
 		SpringApplication.run(MystoreApplication.class, args);
 	}

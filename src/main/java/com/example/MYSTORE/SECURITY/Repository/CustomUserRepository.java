@@ -12,4 +12,5 @@ public interface CustomUserRepository {
     void updateUser(User user);
     User getUserByTeaIdAndEmail(Long id,String email);
     User getUserAndRoleByEmail(String email);
+    User getUserAndTeasByEmail(String email);
 }

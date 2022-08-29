@@ -2,6 +2,7 @@ package com.example.MYSTORE.PRODUCTS.DTO;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 @Getter
 @Setter
+@ToString
 public class SearchDTO {
     private String name;
     private Integer minPrice;

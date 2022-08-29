@@ -4,6 +4,7 @@ import com.example.MYSTORE.PRODUCTS.DTO.SearchDTO;
 import com.example.MYSTORE.PRODUCTS.DTO.TeaListDTO;
 import com.example.MYSTORE.PRODUCTS.POJO.RESULT;
 import com.example.MYSTORE.PRODUCTS.Repository.*;
+import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomTeaRepositoryImpl;
 import com.example.MYSTORE.PRODUCTS.Service.FileService;
 import com.example.MYSTORE.PRODUCTS.Service.ProductService;
 import com.google.gson.Gson;
@@ -21,18 +22,23 @@ import java.security.Principal;
 
 @RestController
 public class ProductController {
+    private final ProductService productService;
+    private final FileService fileService;
+    private final CategoryRepository categoryRepository;
+    private final TeaListsRepository teaListsRepository;
+    private final CustomTeaRepositoryImpl customTeaRepository;
+    private final TeaRepository teaRepository;
     @Autowired
-    private ProductService productService;
-    @Autowired
-    private FileService fileService;
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private TeaListsRepository teaListsRepository;
-    @Autowired
-    private TeaRepository teaRepository;
-    @Autowired
-    private CustomTeaRepository1 customTeaRepository1;
+    public ProductController(ProductService productService, FileService fileService,
+                             CategoryRepository categoryRepository, TeaListsRepository teaListsRepository,
+                             CustomTeaRepositoryImpl customTeaRepository, TeaRepository teaRepository) {
+        this.productService = productService;
+        this.fileService = fileService;
+        this.categoryRepository = categoryRepository;
+        this.teaListsRepository = teaListsRepository;
+        this.customTeaRepository = customTeaRepository;
+        this.teaRepository = teaRepository;
+    }
 
     @PostMapping(value = "/api/product/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity productSave(@RequestParam(value = "tea",required = false) String tea,
@@ -53,10 +59,6 @@ public class ProductController {
     public ResponseEntity productGetImage(@RequestParam("filename") Object fileName) throws IOException {
         return fileService.getImage(fileName);
     }
-    /*@PostMapping(value = "/api/product/getProducts")
-    public ResponseEntity productsGet(){
-        return productService.getProducts();
-    }*/
     @PostMapping(value = "/api/product/getCategory")
     public ResponseEntity getCategory(){
         return ResponseEntity.ok(categoryRepository.findAll());
@@ -66,7 +68,7 @@ public class ProductController {
         System.out.println(name);
         Gson gson = new Gson();
         RESULT result = gson.fromJson(name,RESULT.class);
-        return productService.upldCategory(result.getResult());
+        return productService.uploadCategory(result.getResult());
     }
 
     @PostMapping(value = "/api/product/getProductList1")
@@ -123,8 +125,8 @@ public class ProductController {
     @PostMapping(value = "/api/product/getPriceInfo")
     public ResponseEntity GetPrice(){
         SearchDTO searchDTO = new SearchDTO();
-        searchDTO.setMaxPrice(customTeaRepository1.findMaxPrice());
-        searchDTO.setMinPrice(customTeaRepository1.findMinPrice());
+        searchDTO.setMaxPrice(customTeaRepository.findMaxPrice());
+        searchDTO.setMinPrice(customTeaRepository.findMinPrice());
         return ResponseEntity.ok(searchDTO);
     }
     @PostMapping(value = "/api/product/addinList1")

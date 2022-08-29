@@ -18,9 +18,11 @@ public interface CustomTeaRepository {
     void updateTeaAndUser(Tea tea, User user);
     void updateTeaAndUser(Long teaId, Long userId);
     void deleteRelationTeaAndUser(Long teaId,Long userId);
+    int findMaxPrice();
+    int findMinPrice();
     List<Tea> findTeaByNameAndPriceAndCategoryName
             (String name,Set<String> categories,int minprice,int maxprice,int resPage);
-    List<Tea> findTeaByNameAndPriceAndCategoryName
+    List<Tea> findTeaByNameAndPrice
             (String name,int minprice,int maxprice,int resPage);
 
 }

@@ -1,13 +1,16 @@
 package com.example.MYSTORE.PRODUCTS.Model;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class TeaLists {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,12 +21,4 @@ public class TeaLists {
     private Collection<Tea> teas1 = new ArrayList<>();
     public TeaLists(){}
 
-    public TeaLists(String name) {
-        this.name = name;
-    }
-
-    public void addTea(Tea tea){
-        this.teas1.add(tea);
-        tea.addList(this);
-    }
 }

@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.UUID;
 
@@ -31,15 +32,18 @@ public class FileService {
             return fileName;
         }catch (ClassCastException e){
             return null;
-        } catch (NullPointerException n){
-            return null;
         }
     }
     public ByteArrayResource uploadImage(String fileName) throws IOException{
-        ByteArrayResource byteArrayResource = new ByteArrayResource(
-                Files.readAllBytes(Paths.get(fileName))
-        );
-        return byteArrayResource;
+        try {
+            ByteArrayResource byteArrayResource = new ByteArrayResource(
+                    Files.readAllBytes(Paths.get(fileName))
+            );
+            return byteArrayResource;
+        } catch (NoSuchFileException n){
+            System.out.println(n);
+            return null;
+        }
     }
     public ResponseEntity getImage(Object fileName) throws IOException{
         try{

@@ -1,7 +1,10 @@
 package com.example.MYSTORE;
 
 import com.example.MYSTORE.PRODUCTS.Model.*;
+import com.example.MYSTORE.PRODUCTS.Repository.CustomTeaRepository;
 import com.example.MYSTORE.PRODUCTS.RepositoryImpl.*;
+import com.example.MYSTORE.PRODUCTS.Service.FileService;
+import com.example.MYSTORE.PRODUCTS.Service.ProductUtils;
 import com.example.MYSTORE.SECURITY.JWT.JWTRefreshToken;
 import com.example.MYSTORE.SECURITY.Model.Role;
 import com.example.MYSTORE.SECURITY.Model.User;
@@ -10,10 +13,10 @@ import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomJWTRTokenRepositoryImpl
 import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomUserRepositoryImpl;
 import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomVTokenRepositoryImpl;
 import com.example.MYSTORE.SECURITY.Service.UserService;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -24,24 +27,36 @@ import java.util.UUID;
 
 @SpringBootTest
 class MystoreApplicationTests {
+	private final CustomTeaRepository customTeaRepository;
+	private final CustomTeaImageRepositoryImpl customTeaImageRepository;
+	private final CustomCategoryRepositoryImpl customCategoryRepository;
+	private final CustomReviewRepositoryImpl customReviewRepository;
+	private final CustomUserRepositoryImpl customUserRepository;
+	private final CustomSlaiderRepositoryImpl customSlaiderRepository;
+	private final CustomTeaListRepositoryImpl customTeaListRepository;
+	private final CustomVTokenRepositoryImpl customVTokenRepository;
+	private final CustomJWTRTokenRepositoryImpl customJWTRTokenRepository;
+	private final UserService userService;
+	private final ProductUtils productUtils;
 	@Autowired
-	private CustomTeaRepositoryImpl customTeaRepository;
-	@Autowired
-	private CustomCategoryRepositoryImpl customCategoryRepository;
-	@Autowired
-	private CustomReviewRepositoryImpl customReviewRepository;
-	@Autowired
-	private CustomVTokenRepositoryImpl customVTokenRepository;
-	@Autowired
-	private CustomUserRepositoryImpl customUserRepository;
-	@Autowired
-	private CustomJWTRTokenRepositoryImpl customJWTRTokenRepository;
-	@Autowired
-	private CustomSlaiderRepositoryImpl customSlaiderRepository;
-	@Autowired
-	private CustomTeaImageRepositoryImpl customTeaImageRepository;
-	@Autowired
-	private UserService userService;
+	MystoreApplicationTests(CustomTeaRepository customTeaRepository,CustomTeaImageRepositoryImpl customTeaImageRepository,
+				   CustomCategoryRepositoryImpl customCategoryRepository,CustomReviewRepositoryImpl customReviewRepository,
+				   CustomUserRepositoryImpl customUserRepository,CustomSlaiderRepositoryImpl customSlaiderRepository,
+				   CustomTeaListRepositoryImpl customTeaListRepository,CustomJWTRTokenRepositoryImpl customJWTRTokenRepository,
+							CustomVTokenRepositoryImpl customVTokenRepository,ProductUtils productUtils,UserService userService){
+		this.customTeaRepository = customTeaRepository;
+		this.customTeaListRepository = customTeaListRepository;
+		this.customSlaiderRepository = customSlaiderRepository;
+		this.customReviewRepository = customReviewRepository;
+		this.customCategoryRepository = customCategoryRepository;
+		this.customTeaImageRepository = customTeaImageRepository;
+		this.customVTokenRepository = customVTokenRepository;
+		this.productUtils = productUtils;
+		this.customJWTRTokenRepository = customJWTRTokenRepository;
+		this.customUserRepository = customUserRepository;
+		this.userService = userService;
+	}
+
 	@PersistenceContext
 	private EntityManager em;
 	@Test
@@ -161,10 +176,73 @@ class MystoreApplicationTests {
 		}
 		Set<String> cat = new HashSet<>();
 		System.out.println(cat);
-		List<Tea> teas = customTeaRepository.findTeaByNameAndPriceAndCategoryName("", cat,1000,1005,1);
-		teas.forEach(c -> {
-			System.out.println(c);
-		});
 	}
+	@Test
+	void test8(){
+		SlaiderImages slaiderImages = new SlaiderImages();
+		slaiderImages.setName("name1");
+		customSlaiderRepository.saveNewSlaider(slaiderImages);
+		TeaImage teaImage = new TeaImage("link1");
+		TeaImage teaImage1 = new TeaImage("link2");
+		customTeaImageRepository.saveNewTeaImage(teaImage);
+		customTeaImageRepository.saveNewTeaImage(teaImage1);
+		customSlaiderRepository.updateSlaiderAndTeaImage(slaiderImages,teaImage);
+		customSlaiderRepository.updateSlaiderAndTeaImage(slaiderImages,teaImage1);
+		customSlaiderRepository.updateSlaiderAndTeaImage(slaiderImages,teaImage1);
+		Tea tea = new Tea();
+		tea.setName("name1");
+		Tea tea1 = new Tea();
+		tea1.setName("name2");
+		customTeaRepository.saveNewTea(tea1);
+		customTeaRepository.saveNewTea(tea);
+		TeaLists teaLists = new TeaLists();
+		teaLists.setName("name1");
+		customTeaListRepository.saveNewTeaList(teaLists);
+		customTeaListRepository.uploadTeaListAndTeaById(tea1.getId(), teaLists.getId());
+		customTeaListRepository.uploadTeaListAndTeaById(tea.getId(), teaLists.getId());
+		customTeaListRepository.deleteRelationTeaListAndTeaByName(teaLists.getId(), tea.getId());
+		customTeaListRepository.deleteRelationTeaListAndTeaByName(teaLists.getId(), tea1.getId());
+	}
+	@Test
+	void test9(){
+		Tea tea = new Tea();tea.setName("NAMET1");
+		Tea tea1 = new Tea();tea1.setName("NAMET2");
+		Tea tea2 = new Tea();tea2.setName("NAMET3");
+		tea.setPrice(1000);tea1.setPrice(2000);tea2.setPrice(3000);
+		Category category = new Category("categoryt1");
+		Category category1 = new Category("categoryt2");
+		customCategoryRepository.saveNewCategory(category);
+		customCategoryRepository.saveNewCategory(category1);
+		customTeaRepository.saveNewTea(tea2);
+		customTeaRepository.saveNewTea(tea1);
+		customTeaRepository.saveNewTea(tea);
+		customCategoryRepository.updateCategoryAndTea(category,tea);
+		customCategoryRepository.updateCategoryAndTea(category1,tea1);
+		customCategoryRepository.updateCategoryAndTea(category1,tea);
+		Set<String> c = new HashSet<>();
+		c.add("categoryt2");
+		List<Tea> teas = customTeaRepository.findTeaByNameAndPriceAndCategoryName(
+				"nam",c,1,9999,1
+		);
+		List<Tea> teaList = customTeaRepository.findTeaByNameAndPrice("nam",1,9999,1);
+ 		teas.forEach(System.out::println);
+		teaList.forEach(System.out::println);
+	}
+	@Transactional(rollbackFor = Exception.class)
+	public void ae(){
+		Tea tea = new Tea();
+		tea.setName("name11");
+		customTeaRepository.saveNewTea(tea);
+		System.out.println(1/0);
 
+	}
+	@Test
+	void test10(){
+		ae();
+	}
+	@Test
+	void test11(){
+	 	List<Tea> teas = em.createQuery("select t from Tea t",Tea.class).getResultList();
+		 teas.forEach(System.out::println);
+	}
 }

@@ -4,7 +4,6 @@ import com.example.MYSTORE.SECURITY.JWT.JWTAuthorization;
 import com.example.MYSTORE.SECURITY.JWT.JWTRefreshRequest;
 import com.example.MYSTORE.SECURITY.JWT.JWTRequest;
 import com.example.MYSTORE.SECURITY.JWT.JWTResponse;
-import com.example.MYSTORE.SECURITY.Repository.UserRepository;
 import com.example.MYSTORE.SECURITY.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +17,13 @@ import javax.servlet.http.HttpServletResponse;
 
 @RestController
 public class SecurityController {
-    @Autowired
     private UserService userService;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private JWTAuthorization authService;
+    @Autowired
+    public SecurityController(UserService userService, JWTAuthorization authService) {
+        this.userService = userService;
+        this.authService = authService;
+    }
 
     @PostMapping("/api/auth/logout")
     public ResponseEntity Logout(@RequestBody String email, HttpServletRequest request,

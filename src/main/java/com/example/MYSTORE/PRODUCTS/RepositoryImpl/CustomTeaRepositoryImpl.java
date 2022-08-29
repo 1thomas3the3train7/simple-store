@@ -4,6 +4,7 @@ import com.example.MYSTORE.PRODUCTS.Model.Category;
 import com.example.MYSTORE.PRODUCTS.Model.Tea;
 import com.example.MYSTORE.PRODUCTS.Repository.CustomTeaRepository;
 import com.example.MYSTORE.SECURITY.Model.User;
+import org.junit.jupiter.api.Test;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -116,11 +117,11 @@ public class CustomTeaRepositoryImpl implements CustomTeaRepository {
             (String name, Set<String> categories, int minprice, int maxprice,int page) {
         final int resPage = 10 * (page - 1);
         List<Tea> teas = em.createQuery("select t from Tea t " +
-                " join t.categories as tc where tc.name in (:CatName) and t.name like :TeaName " +
+                " join t.categories as tc where tc.name in (:CatName) and lower(t.name) like :TeaName " +
                         "and t.price >= :minPrice and t.price <= :maxPrice " +
                         "group by t having count(t) >= :SizeCat " +
                         "order by t.name ASC",Tea.class)
-                .setParameter("TeaName","%" + name + "%")
+                .setParameter("TeaName","%" + name.toLowerCase() + "%")
                 .setParameter("CatName",categories)
                 .setParameter("minPrice",minprice)
                 .setParameter("maxPrice",maxprice)
@@ -133,18 +134,28 @@ public class CustomTeaRepositoryImpl implements CustomTeaRepository {
 
     @Override
     @Transactional
-    public List<Tea> findTeaByNameAndPriceAndCategoryName(String name, int minprice, int maxprice, int page) {
+    public List<Tea> findTeaByNameAndPrice(String name, int minprice, int maxprice, int page) {
         final int resPage = 10 * (page - 1);
         List<Tea> teas = em.createQuery("select t from Tea t " +
                         " join t.categories as tc where t.name like :TeaName " +
                         "and t.price >= :minPrice and t.price <= :maxPrice " +
                         "order by t.name ASC",Tea.class)
-                .setParameter("TeaName","%" + name + "%")
+                .setParameter("TeaName","%" + name.toLowerCase() + "%")
                 .setParameter("minPrice",minprice)
                 .setParameter("maxPrice",maxprice)
                 .setFirstResult(resPage)
                 .setMaxResults(10)
                 .getResultList();
         return teas;
+    }
+
+    @Override
+    public int findMaxPrice() {
+        return (int) em.createQuery("select max(price) from Tea").getSingleResult();
+    }
+
+    @Override
+    public int findMinPrice() {
+        return (Integer) em.createQuery("select min(price) from Tea").getSingleResult();
     }
 }

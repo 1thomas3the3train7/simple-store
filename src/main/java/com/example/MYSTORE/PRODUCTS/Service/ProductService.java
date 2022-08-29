@@ -1,360 +1,91 @@
 package com.example.MYSTORE.PRODUCTS.Service;
 
-import com.example.MYSTORE.PRODUCTS.DTO.*;
-import com.example.MYSTORE.PRODUCTS.Model.*;
-import com.example.MYSTORE.PRODUCTS.POJO.RESULT;
-import com.example.MYSTORE.PRODUCTS.POJO.ReviewsJson;
-import com.example.MYSTORE.PRODUCTS.Repository.*;
-import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomCategoryRepositoryImpl;
-import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomReviewRepositoryImpl;
-import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomSlaiderRepositoryImpl;
-import com.example.MYSTORE.PRODUCTS.RepositoryImpl.CustomTeaImageRepositoryImpl;
-import com.example.MYSTORE.SECURITY.Model.User;
-import com.example.MYSTORE.SECURITY.Repository.UserRepository;
-import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomUserRepositoryImpl;
-import com.google.gson.Gson;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
 public class ProductService {
     @Value("${upload.path}")
     private String path;
-    @Autowired
-    private TeaRepository teaRepository;
-    @Autowired
-    private FileService fileService;
-    @Autowired
-    private TeaImageRepository teaImageRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private ReviewsRepository reviewsRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private LazyTeaRepository lazyTeaRepository;
-    @Autowired
-    private SlaiderRepository slaiderRepository;
-    @Autowired
-    private TeaListsRepository teaListsRepository;
-    @Autowired
-    private CustomTeaRepository customTeaRepository;
-    @Autowired
-    private CustomTeaImageRepositoryImpl customTeaImageRepository;
-    @Autowired
-    private CustomCategoryRepositoryImpl customCategoryRepository;
-    @Autowired
-    private CustomReviewRepositoryImpl customReviewRepository;
-    @Autowired
-    private CustomUserRepositoryImpl customUserRepository;
-    @Autowired
-    private CustomSlaiderRepositoryImpl customSlaiderRepository;
 
-    private final Gson gson = new Gson();
-    @Transactional(rollbackFor = Exception.class)
-    public ResponseEntity saveProduct(String teaReq, MultipartFile[] files,Object mainFile,String category) throws IOException,ClassCastException, URISyntaxException {
-        try{
-            TeaDTO teaDTO = gson.fromJson(teaReq,TeaDTO.class);
-            Tea tea = DTO_to_Tea(teaDTO);
-            for(MultipartFile file : files){
-                TeaImage teaImage =  new TeaImage(fileService.saveFile(file));
-                teaImage.setTea(tea);
-                customTeaImageRepository.saveNewTeaImage(teaImage);
-            }
-            tea.setMainLinkImage(fileService.saveFile(mainFile));
-            customTeaRepository.saveNewTea(tea);
-            String[] categories = category.replace("[","").replace("]","").split(",");
-            for(String c : categories){
-                if(!c.equals("undefined")){
-                    RESULT result = gson.fromJson(c,RESULT.class);
-                    Category category1 = customCategoryRepository.getCategoryByName(result.getResult());
-                    if(category1 != null){customCategoryRepository.updateCategoryAndTea(category1,tea);}
-                }
-            }
-            System.out.println("save");
-            return ResponseEntity.ok("saved");
-        } catch (ClassCastException e){
-            System.out.println(e);
-            System.out.println("error save product");
-            return ResponseEntity.ok("Error");
-        }
+    private final TeaListService teaListService;
+    private final TeaService teaService;
+    private final SlaiderService slaiderService;
+    private final ReviewService reviewService;
+
+    public ProductService(TeaListService teaListService, TeaService teaService,
+                          SlaiderService slaiderService, ReviewService reviewService) {
+        this.teaListService = teaListService;
+        this.teaService = teaService;
+        this.slaiderService = slaiderService;
+        this.reviewService = reviewService;
     }
-    public ResponseEntity uplaodProduct(String tea, MultipartFile[] files,MultipartFile filemain,String category) throws IOException,URISyntaxException{
-        try{
-            //TODO method dont work
-            TeaDTO teaDTO = gson.fromJson(tea,TeaDTO.class);
-            Tea tea1 = customTeaRepository.getLazyTeaById(teaDTO.getId());
-            if(files != null){
-                System.out.println(1);
-                customTeaRepository.TeaClearTeaImageById(tea1.getId());
-                System.out.println(2);
-                for(MultipartFile file : files){
-                    TeaImage teaImage =  new TeaImage(fileService.saveFile(file));
-                    customTeaImageRepository.updateTeaImageAndTea(teaImage,tea1);
-                }
-            }
-            if(category != null && category.length() > 4){
-                String[] categories = category.replace("[","").replace("]","").split(",");
-                customTeaRepository.TeaClearCategoryById(tea1.getId());
-                for(String c : categories){
-                    RESULT result = gson.fromJson(c,RESULT.class);
-                    Category category1 = customCategoryRepository.getCategoryByName(result.getResult());
-                    if(category1 != null){customCategoryRepository.updateCategoryAndTea(category1,tea1);}
-                }
-            }
-            if(filemain != null){
-                tea1.setMainLinkImage(fileService.saveFile(filemain));
-            }
-            System.out.println();
-            customTeaRepository.uploadTea(tea1);
-            return ResponseEntity.ok("upload");
-        } catch (ClassCastException c){
-            System.out.println(c);
-            return ResponseEntity.ok("invalid files");
-        }
+
+    public ResponseEntity saveProduct(String teaReq, MultipartFile[] files, Object mainFile, String category)
+            throws IOException,URISyntaxException{
+        return teaService.saveProduct(teaReq,files,mainFile,category);
     }
-    public ResponseEntity upldCategory(String name){
-        try {
-            Category category = new Category(name);
-            customCategoryRepository.saveNewCategory(category);
-            return ResponseEntity.ok(new RESULT("category was saved"));
-        } catch (ClassCastException e){
-            System.out.println(e);
-            return ResponseEntity.badRequest().body(new RESULT("ClassCastException"));
-        }
+    public ResponseEntity uplaodProduct(String tea, MultipartFile[] files,MultipartFile filemain,String category)
+            throws IOException,URISyntaxException{
+        return teaService.uploadProduct(tea,files,filemain,category);
+    }
+    public ResponseEntity uploadCategory(String name){
+        return teaService.uploadCategory(name);
     }
     public ResponseEntity saveReview(String json, String email){
-        ReviewsJson reviewsJson = gson.fromJson(json,ReviewsJson.class);
-        User user = customUserRepository.getUserByEmail(email);
-        Tea tea = customTeaRepository.getLazyTeaById(Long.parseLong(reviewsJson.getId()));
-        if(user != null && tea != null){
-            Reviews reviews = new Reviews(reviewsJson.getPluses(),reviewsJson.getMinuses(),
-                    reviewsJson.getComment(), reviewsJson.getGrade());
-            int grd = Integer.parseInt(customReviewRepository.countReviewsByTea(tea).toString());
-            double grd1 = tea.getGrade();
-            if(grd1 > 0){tea.setGrade(grd1 * (grd) / (grd + 1) + reviews.getGrade()/(grd + 1));}
-            else {tea.setGrade(reviews.getGrade());};
-            reviews.setUsername(user.getUsername());
-            customTeaRepository.uploadTea(tea);
-            customReviewRepository.saveNewReview(reviews);
-            customReviewRepository.updateReviewAndTea(reviews,tea);
-            customReviewRepository.updateReviewAndUser(reviews,user);
-            return ResponseEntity.ok(new RESULT("saved"));
-        }
-        return ResponseEntity.ok(null);
+        return reviewService.saveReview(json,email);
     }
     public ResponseEntity getReview(String id){
-        RESULT result = gson.fromJson(id,RESULT.class);
-        List<Reviews> reviewsSet = customReviewRepository.getReviewsByTeaId(Long.parseLong(result.getResult()));
-        if(reviewsSet == null){return ResponseEntity.ok(new RESULT("reviews not found"));}
-        List<ReviewsDTO> reviewsDTOS = new ArrayList<>();
-        for(Reviews r : reviewsSet){
-            ReviewsDTO reviewsDTO = new ReviewsDTO(r.getPluses(),r.getMinuses(),r.getComment(),r.getGrade(),r.getUsername());
-            reviewsDTOS.add(reviewsDTO);
-        }
-        return ResponseEntity.ok(reviewsDTOS);
+        return reviewService.getReview(id);
     }
     public ResponseEntity getTea(String id){
-        try {
-            Tea tea = customTeaRepository.getEagerTeaCategoryReviewImage(Long.parseLong(id));
-            TeaDTO teaDTO = Tea_to_DTO(tea);
-            return ResponseEntity.ok(teaDTO);
-        } catch (NullPointerException n){
-            return ResponseEntity.badRequest().body("tea not found");
-        }
-
+        return teaService.getTea(id);
     }
     public ResponseEntity searchTea(String search){
-        SearchDTO searchDTO = gson.fromJson(search,SearchDTO.class);
-        Set<String> categories = searchDTO.getCategoryDTOS();
-        List<Tea> teas;
-        if(categories != null && categories.size() >= 1){
-            teas = customTeaRepository.findTeaByNameAndPriceAndCategoryName(
-                    searchDTO.getName(),categories,searchDTO.getMinPrice(),searchDTO.getMaxPrice(), searchDTO.getPageable()
-            );
-        }else{
-            teas = customTeaRepository.findTeaByNameAndPriceAndCategoryName(
-                    searchDTO.getName(),searchDTO.getMinPrice(),searchDTO.getMaxPrice(), searchDTO.getPageable()
-            );
-        }
-        List<TeaDTO> teaDTOS = new ArrayList<>();
-        teas.forEach(t -> teaDTOS.add(TeaLazy_to_DTO(t)));
-        SearchDTO searchDTO1 = new SearchDTO();
-        searchDTO1.setTeaDTOS(teaDTOS);
-        searchDTO1.setCount(searchDTO.getPageable());
-        return ResponseEntity.ok(searchDTO1);
+        return teaService.searchTea(search);
     }
     public ResponseEntity addLike(String res, Principal principal){
-        RESULT result = gson.fromJson(res, RESULT.class);
-        User user = customUserRepository.getUserByTeaIdAndEmail(Long.parseLong(result.getResult()),principal.getName());
-        if(user != null){
-            customTeaRepository.updateTeaAndUser(Long.parseLong(result.getResult()),user.getId());
-            return ResponseEntity.ok("add");
-        }
-        return ResponseEntity.ok(new RESULT("exc"));
+        return teaService.addLike(res,principal);
     }
     public ResponseEntity delLike(String res,Principal principal){
-        RESULT result = gson.fromJson(res,RESULT.class);
-        User user = customUserRepository.getUserByTeaIdAndEmail(Long.parseLong(result.getResult()),principal.getName());
-        if(user != null){
-            customTeaRepository.deleteRelationTeaAndUser(Long.parseLong(result.getResult()), user.getId());
-            return ResponseEntity.ok("Remove");
-        }
-        return ResponseEntity.ok("exc");
+        return teaService.delLike(res,principal);
     }
-    public ResponseEntity uploadSlaiderleft(MultipartFile[] multipartFiles,boolean del) throws IOException,URISyntaxException{
-        SlaiderImages slaiderImages = customSlaiderRepository.getSlaiderAndTeaImageByName("leftslaider");
-        if(del){teaImageRepository.deleteAllInBatch(slaiderImages.getTeaImages());slaiderImages.getTeaImages().clear();}
-        if(slaiderImages == null){return ResponseEntity.ok("slaider not found");}
-        for(MultipartFile mf : multipartFiles){
-            TeaImage teaImage = new TeaImage(fileService.saveFile(mf));
-            slaiderImages.addImage(teaImage);
-            teaImageRepository.save(teaImage);
-        }
-        if(del){return ResponseEntity.ok("upload");}
-        return ResponseEntity.ok("saved");
+    public ResponseEntity uploadSlaiderleft(MultipartFile[] multipartFiles,boolean del)
+            throws IOException,URISyntaxException{
+        return slaiderService.uploadSlaiderleft(multipartFiles,del);
     }
     public ResponseEntity getLeftSlaider(){
-        try {
-            List<SlaiderDTO> slaiderDTOS = new ArrayList<>();
-            List<TeaImage> teaImages = slaiderRepository.findByName("leftslaider").getTeaImages().stream().toList();
-            for(TeaImage t : teaImages){
-                SlaiderDTO slaiderDTO = new SlaiderDTO();
-                slaiderDTO.setName(t.getLinkImage());
-                slaiderDTOS.add(slaiderDTO);
-            }
-            return ResponseEntity.ok(slaiderDTOS);
-        } catch (NullPointerException n){
-            System.out.println(n);
-            return ResponseEntity.badRequest().build();
-        }
+        return slaiderService.getLeftSlaider();
     }
-    public ResponseEntity uploadSlaiderright(MultipartFile[] multipartFiles,boolean del) throws IOException,URISyntaxException{
-        SlaiderImages slaiderImages = slaiderRepository.findByName("rightslaider");
-        if(del){teaImageRepository.deleteAll(slaiderImages.getTeaImages());slaiderImages.getTeaImages().clear();}
-        if(slaiderImages == null){return ResponseEntity.ok("slaider not found");}
-        for(MultipartFile mf : multipartFiles){
-            TeaImage teaImage = new TeaImage(fileService.saveFile(mf));
-            slaiderImages.addImage(teaImage);
-            teaImageRepository.save(teaImage);
-        }
-        if(del){return ResponseEntity.ok("upload");}
-        return ResponseEntity.ok("saved");
+    public ResponseEntity uploadSlaiderright(MultipartFile[] multipartFiles,boolean del)
+            throws IOException,URISyntaxException{
+        return slaiderService.uploadSlaiderright(multipartFiles, del);
     }
     public ResponseEntity getRightSlaider(){
-        try {
-            List<SlaiderDTO> slaiderDTOS = new ArrayList<>();
-            List<TeaImage> teaImages = slaiderRepository.findByName("rightslaider").getTeaImages().stream().toList();
-            for(TeaImage t : teaImages){
-                SlaiderDTO slaiderDTO = new SlaiderDTO();
-                slaiderDTO.setName(t.getLinkImage());
-                slaiderDTOS.add(slaiderDTO);
-            }
-            return ResponseEntity.ok(slaiderDTOS);
-        } catch (NullPointerException n){
-            System.out.println(n);
-            return ResponseEntity.badRequest().build();
-        }
+        return slaiderService.getRightSlaider();
     }
     public ResponseEntity getLikes(Principal principal){
-        List<Tea> teaList = userRepository.findByEmail(principal.getName()).getTeas();
-        List<TeaDTO> teaDTOS = new ArrayList<>();
-        for(Tea t : teaList){
-            TeaDTO teaDTO = new TeaDTO(t.getId(),t.getName(),t.getMadeCountry(),t.getAbout(),t.getFermentation(),t.getPrice(),t.getMethodCook(),
-                    t.getMainLinkImage(),t.getPresence(),t.getGrade(),t.getOldPrice());
-            teaDTO.setSubname(t.getSubname());
-            teaDTOS.add(teaDTO);
-        }
-        return ResponseEntity.ok(teaDTOS);
+        return teaService.getLikes(principal);
     }
     public ResponseEntity addInList1(String res){
-        RESULT result = gson.fromJson(res,RESULT.class);
-        TeaLists teaLists1 = teaListsRepository.findByName("list1");
-        Tea tea = teaRepository.getById(Long.parseLong(result.getResult()));
-        if(tea != null && !teaLists1.getTeas1().contains(tea)){
-            tea.addList(teaLists1);
-            teaRepository.saveAndFlush(tea);
-            return ResponseEntity.ok("add");
-        }
-        return ResponseEntity.ok("already exist or tea by id not found");
+        return teaListService.addInList1(res);
     }
     public ResponseEntity delInList1(String res){
-        RESULT result = gson.fromJson(res,RESULT.class);
-        TeaLists teaLists = teaListsRepository.findByName("list1");
-        Tea tea = teaRepository.getById(Long.parseLong(result.getResult()));
-        if(tea != null && teaLists.getTeas1().contains(tea)){
-            tea.delList(teaLists);
-            teaRepository.saveAndFlush(tea);
-            return ResponseEntity.ok("del");
-        }
-        return ResponseEntity.ok("already delete or tea by id not found");
+        return teaListService.delInList1(res);
     }
     public ResponseEntity addInList2(String res){
-        RESULT result = gson.fromJson(res,RESULT.class);
-        TeaLists teaLists1 = teaListsRepository.findByName("list2");
-        Tea tea = teaRepository.getById(Long.parseLong(result.getResult()));
-        if(tea != null && !teaLists1.getTeas1().contains(tea)){
-            tea.addList(teaLists1);
-            teaRepository.saveAndFlush(tea);
-            return ResponseEntity.ok("add");
-        }
-        return ResponseEntity.ok("already exist or tea by id not found");
+        return teaListService.addInList2(res);
     }
     public ResponseEntity delInList2(String res){
-        RESULT result = gson.fromJson(res,RESULT.class);
-        TeaLists teaLists = teaListsRepository.findByName("list2");
-        Tea tea = teaRepository.getById(Long.parseLong(result.getResult()));
-        if(tea != null && teaLists.getTeas1().contains(tea)){
-            tea.delList(teaLists);
-            teaRepository.saveAndFlush(tea);
-            return ResponseEntity.ok("del");
-        }
-        return ResponseEntity.ok("already delete or tea by id not found");
-    }
-
-    public Tea DTO_to_Tea(TeaDTO teaDTO){
-        Tea tea = new Tea();
-        if(teaDTO.getId() != null){tea.setId(teaDTO.getId());}
-        tea.setName(teaDTO.getName());tea.setPrice(teaDTO.getPrice());tea.setMainLinkImage(teaDTO.getMainLinkImage());
-        tea.setSubname(teaDTO.getSubname());
-        tea.setFermentation(teaDTO.getFermentation());tea.setAbout(teaDTO.getAbout());tea.setOldPrice(teaDTO.getOldPrice());
-        return tea;
-    }
-    public TeaDTO Tea_to_DTO(Tea tea){
-        TeaDTO teaDTO = new TeaDTO();
-        teaDTO.setId(tea.getId());
-        teaDTO.setAbout(tea.getAbout());teaDTO.setFermentation(tea.getFermentation());
-        teaDTO.setGrade(tea.getGrade());teaDTO.setMadeCountry(tea.getMadeCountry());
-        teaDTO.setName(tea.getName());teaDTO.setMainLinkImage(tea.getMainLinkImage());
-        teaDTO.setPrice(tea.getPrice());teaDTO.setTeaImages(tea.getTeaImages().stream().toList());
-        teaDTO.setOldPrice(tea.getOldPrice());teaDTO.setSubname(tea.getSubname());
-        teaDTO.setReviewsDTOList(tea.getReviews().stream().map
-                (m -> new ReviewsDTO(m.getPluses(),m.getMinuses(),m.getComment(),m.getGrade(),m.getUsername())).collect(Collectors.toList()));
-        teaDTO.setCategoryDTOList(tea.getCategories().stream().map(
-                m -> new CategoryDTO(m.getName())).collect(Collectors.toList()));
-        return teaDTO;
-    }
-    public TeaDTO TeaLazy_to_DTO(Tea tea){
-        TeaDTO teaDTO = new TeaDTO();
-        teaDTO.setId(tea.getId());teaDTO.setPrice(teaDTO.getPrice());
-        teaDTO.setOldPrice(tea.getOldPrice());teaDTO.setSubname(tea.getSubname());
-        teaDTO.setMainLinkImage(tea.getMainLinkImage());
-        return teaDTO;
+        return teaListService.delInList2(res);
     }
 }

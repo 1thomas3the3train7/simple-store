@@ -1,7 +1,6 @@
 package com.example.MYSTORE.SECURITY.JWT;
 
 import com.example.MYSTORE.SECURITY.Model.User;
-import com.example.MYSTORE.SECURITY.Repository.UserRepository;
 import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomJWTRTokenRepositoryImpl;
 import com.example.MYSTORE.SECURITY.RepositoryImpl.CustomUserRepositoryImpl;
 import io.jsonwebtoken.Claims;
@@ -22,8 +21,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class JWTAuthorization {
-    @Autowired
-    private UserRepository userRepository;
     @Autowired
     private CustomJWTRTokenRepositoryImpl customJWTRTokenRepository;
     @Autowired
